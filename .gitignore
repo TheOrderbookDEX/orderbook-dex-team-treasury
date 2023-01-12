@@ -1,0 +1,6 @@
+artifacts/
+dist/
+node_modules/
+src/**
+!src/tsconfig.json
+test-report/
