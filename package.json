@@ -13,12 +13,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@frugal-wizard/abi2ts-lib": "^0.6.2",
+    "@frugal-wizard/abi2ts-lib": "^0.7.0",
     "@openzeppelin/contracts": "4.8.0",
-    "@theorderbookdex/orderbook-dex": "1.0.0-rc.12"
+    "@theorderbookdex/orderbook-dex": "1.0.0-rc.13"
   },
   "devDependencies": {
-    "@frugal-wizard/abi2ts": "^0.6.0",
+    "@frugal-wizard/abi2ts": "^0.7.0",
     "@frugal-wizard/contract-test-helper": "^0.4.0",
     "@frugal-wizard/solidity-compiler-wrapper": "^1.1.0",
     "@types/chai": "^4.3.4",
