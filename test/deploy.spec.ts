@@ -3,6 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
 import { deployTestScenarios } from './scenarios/deploy';
 import { DefaultOverrides } from '@frugal-wizard/abi2ts-lib';
+import { SignerAdded } from '../src/OrderbookDEXTeamTreasury';
 
 chai.use(chaiAsPromised);
 
@@ -35,6 +36,26 @@ describe('deploy', () => {
                         expect(await treasury.signers(signer))
                             .to.be.true;
                     }
+                });
+
+                it('should emit SignerAdded', async (test) => {
+                    const treasury = await test.execute();
+                    const { events } = await treasury.getDeployTransaction();
+                    expect(events)
+                        .to.have.length(test.signers.length);
+                    for (const event of events) {
+                        expect(event)
+                            .to.be.instanceOf(SignerAdded)
+                            .that.satisfies((event: SignerAdded) => {
+                                expect(event.address)
+                                    .to.be.equal(treasury.address);
+                                expect(event.signer)
+                                    .to.be.oneOf(test.signers);
+                                return true;
+                            });
+                    }
+                    expect(events.map(event => (event as SignerAdded).signer))
+                        .to.have.members(test.signers);
                 });
             }
         });
