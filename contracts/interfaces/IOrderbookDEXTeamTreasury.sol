@@ -81,12 +81,12 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     error InvalidSignature();
 
     /**
-     * Error thrown when deploying with a value of signatures required too large.
+     * Error thrown when deploying with not enough signers.
      *
      * In other words, when signatures required is equal or larger to the amount of signers,
      * therefore it wouldn't ever be possible to provide that amount of signatures.
      */
-    error SignaturesRequiredTooLarge();
+    error NotEnoughSigners();
 
     /**
      * Error thrown when trying to remove a signer that is not signer.

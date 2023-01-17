@@ -53,7 +53,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         EIP712(NAME, VERSION)
     {
         if (signaturesRequired_ >= signers_.length) {
-            revert SignaturesRequiredTooLarge();
+            revert NotEnoughSigners();
         }
 
         for (uint256 i; i < signers_.length; i++) {
