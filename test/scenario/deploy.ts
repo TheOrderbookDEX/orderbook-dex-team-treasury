@@ -30,7 +30,7 @@ export function createDeployScenario({
 
         ...createEthereumScenario({
             only,
-            description: description || `deploy${describeTreasuryProps({ signers, signaturesRequired })}`,
+            description: description || `deploy${describeTreasuryProps({ signers: signers, signaturesRequired })}`,
 
             async setup(ctx) {
                 ctx.addContext('signers', signers);

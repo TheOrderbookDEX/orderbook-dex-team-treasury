@@ -40,6 +40,7 @@ export function createClaimFeesScenario({
 
             async setup(ctx) {
                 ctx.addContext('orderbooks', orderbooks);
+                ctx.addContext('caller', caller);
                 const orderbooksAddresses = orderbooks.map(orderbook => ctx[orderbook].address);
                 const callerAddress = ctx[caller];
                 return {

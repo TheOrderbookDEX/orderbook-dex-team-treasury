@@ -20,6 +20,7 @@ export const claimFeesScenarios = [
         orderbooks: [],
     }),
     createClaimFeesScenario({
+        description: 'claim fees using unauthorized account',
         orderbooks: [],
         caller: Account.THIRD,
         expectedError: new Unauthorized(),

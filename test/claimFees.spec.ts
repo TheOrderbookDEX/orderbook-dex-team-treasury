@@ -10,7 +10,7 @@ chai.use(chaiAsPromised);
 
 DefaultOverrides.gasLimit = 5000000;
 
-describe.only('claimFees', () => {
+describe('claimFees', () => {
     for (const scenario of claimFeesScenarios) {
         scenario.describe(({ it }) => {
             if (scenario.expectedError) {

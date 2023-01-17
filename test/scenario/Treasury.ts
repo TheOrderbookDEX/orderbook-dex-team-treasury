@@ -67,7 +67,7 @@ export function createTreasuryScenario<Context>({
 }
 
 export function describeTreasuryProps({
-    signers,
+    signers: signers,
     signaturesRequired,
 }: TreasuryProperties): string {
     const description = [];
