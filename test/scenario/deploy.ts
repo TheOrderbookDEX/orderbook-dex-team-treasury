@@ -1,6 +1,7 @@
 import { Address, ContractError } from '@frugal-wizard/abi2ts-lib';
 import { Account, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
+import { describeTreasuryProps } from './Treasury';
 
 export type DeployScenario = {
     readonly expectedError?: ContractError;
@@ -29,7 +30,7 @@ export function createDeployScenario({
 
         ...createEthereumScenario({
             only,
-            description: description || `deploy with signers = ${signers.toString() || 'none'} and signaturesRequired = ${signaturesRequired}`,
+            description: description || `deploy${describeTreasuryProps({ signers, signaturesRequired })}`,
 
             async setup(ctx) {
                 ctx.addContext('signers', signers);
