@@ -15,7 +15,7 @@ export async function signTypedData({
     verifyingContract: string;
     types: Record<string, unknown>;
     primaryType: string;
-    message: (signer: string) => unknown;
+    message: unknown;
 }): Promise<[Address, string][]> {
     const provider = getProvider();
     const chainId = await provider.getSigner().getChainId();
@@ -40,7 +40,7 @@ export async function signTypedData({
                     verifyingContract,
                 },
                 primaryType,
-                message: stringify(message(signer)),
+                message: stringify(message),
             }
         ]);
         signatures.push([ signer, signature ]);

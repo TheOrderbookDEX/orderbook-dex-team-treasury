@@ -66,20 +66,6 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
     bytes32 constant REPLACE_SIGNER_TYPEHASH = keccak256(
         "ReplaceSigner("
-            "address signer,"
-            "ReplaceSignerArgs args"
-        ")"
-        "ReplaceSignerArgs("
-            "address executor,"
-            "address signerToRemove,"
-            "address signerToAdd,"
-            "uint256 nonce,"
-            "uint256 deadline"
-        ")"
-    );
-
-    bytes32 constant REPLACE_SIGNER_ARGS_TYPEHASH = keccak256(
-        "ReplaceSignerArgs("
             "address executor,"
             "address signerToRemove,"
             "address signerToAdd,"
@@ -104,16 +90,16 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
-        bytes32 argsHash = keccak256(abi.encode(
-            REPLACE_SIGNER_ARGS_TYPEHASH,
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            REPLACE_SIGNER_TYPEHASH,
             executor,
             signerToRemove,
             signerToAdd,
             nonce_,
             deadline
-        ));
+        )));
 
-        checkSignatures(executor, signatures, REPLACE_SIGNER_TYPEHASH, argsHash);
+        checkSignatures(executor, signatures, digest);
 
         _nonce = nonce_ + 1;
         _signers[signerToRemove] = false;
@@ -125,20 +111,6 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
     bytes32 constant CHANGE_FEE_TYPEHASH = keccak256(
         "ChangeFee("
-            "address signer,"
-            "ChangeFeeArgs args"
-        ")"
-        "ChangeFeeArgs("
-            "address executor,"
-            "uint32 version,"
-            "uint256 fee,"
-            "uint256 nonce,"
-            "uint256 deadline"
-        ")"
-    );
-
-    bytes32 constant CHANGE_FEE_ARGS_TYPEHASH = keccak256(
-        "ChangeFeeArgs("
             "address executor,"
             "uint32 version,"
             "uint256 fee,"
@@ -157,16 +129,16 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
-        bytes32 argsHash = keccak256(abi.encode(
-            CHANGE_FEE_ARGS_TYPEHASH,
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            CHANGE_FEE_TYPEHASH,
             executor,
             version,
             fee_,
             nonce_,
             deadline
-        ));
+        )));
 
-        checkSignatures(executor, signatures, CHANGE_FEE_TYPEHASH, argsHash);
+        checkSignatures(executor, signatures, digest);
 
         _nonce = nonce_ + 1;
         _fee[version] = fee_;
@@ -184,20 +156,6 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
     bytes32 constant CALL_TYPEHASH = keccak256(
         "Call("
-            "address signer,"
-            "CallArgs args"
-        ")"
-        "CallArgs("
-            "address executor,"
-            "address target,"
-            "bytes data,"
-            "uint256 nonce,"
-            "uint256 deadline"
-        ")"
-    );
-
-    bytes32 constant CALL_ARGS_TYPEHASH = keccak256(
-        "CallArgs("
             "address executor,"
             "address target,"
             "bytes data,"
@@ -214,16 +172,16 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     ) external onlySigner validUntil(deadline) {
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
-        bytes32 argsHash = keccak256(abi.encode(
-            CALL_ARGS_TYPEHASH,
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            CALL_TYPEHASH,
             executor,
             target,
             data,
             nonce_,
             deadline
-        ));
+        )));
 
-        checkSignatures(executor, signatures, CALL_TYPEHASH, argsHash);
+        checkSignatures(executor, signatures, digest);
 
         _nonce = nonce_ + 1;
 
@@ -251,14 +209,12 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
      *
      * @param executor   the account calling the function
      * @param signatures the signatures to check
-     * @param typeHash   the hash for the structured data type
-     * @param argsHash   the struct hash for the arguments used to call the function
+     * @param digest     the hash for the structured data
      */
     function checkSignatures(
         address              executor,
         Signature[] calldata signatures,
-        bytes32              typeHash,
-        bytes32              argsHash
+        bytes32              digest
     ) internal view {
         if (signatures.length < _signaturesRequired) {
             revert NotEnoughSignatures();
@@ -280,12 +236,6 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
                     revert DuplicateSignature();
                 }
             }
-
-            bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-                typeHash,
-                signer,
-                argsHash
-            )));
 
             if (signer != ECDSA.recover(digest, signatures[i].signature)) {
                 revert InvalidSignature();

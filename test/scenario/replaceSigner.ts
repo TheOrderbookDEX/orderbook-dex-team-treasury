@@ -69,10 +69,6 @@ export function createReplaceSignerScenario({
                     verifyingContract: ctx.treasury.address,
                     types: {
                         ReplaceSigner: [
-                            { name: 'signer', type: 'address'           },
-                            { name: 'args',   type: 'ReplaceSignerArgs' },
-                        ],
-                        ReplaceSignerArgs: [
                             { name: 'executor',       type: 'address' },
                             { name: 'signerToRemove', type: 'address' },
                             { name: 'signerToAdd',    type: 'address' },
@@ -81,16 +77,13 @@ export function createReplaceSignerScenario({
                         ],
                     },
                     primaryType: 'ReplaceSigner',
-                    message: signer => ({
-                        signer,
-                        args: {
-                            executor:       callerAddress,
-                            signerToRemove: signerToRemoveAddress,
-                            signerToAdd:    signerToAddAddress,
-                            nonce:          nonce,
-                            deadline:       deadlineTimestamp,
-                        },
-                    }),
+                    message: {
+                        executor:       callerAddress,
+                        signerToRemove: signerToRemoveAddress,
+                        signerToAdd:    signerToAddAddress,
+                        nonce:          nonce,
+                        deadline:       deadlineTimestamp,
+                    },
                 });
                 return {
                     ...ctx,
