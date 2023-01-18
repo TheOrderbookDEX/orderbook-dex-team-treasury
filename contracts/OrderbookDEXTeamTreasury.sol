@@ -142,6 +142,8 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
         _nonce = nonce_ + 1;
         _fee[version] = fee_;
+
+        emit FeeChanged(version, fee_);
     }
 
     function claimFees(IOrderbook[] calldata orderbooks) external onlySigner {
