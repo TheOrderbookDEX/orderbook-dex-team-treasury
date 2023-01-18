@@ -8,14 +8,6 @@ import { IOrderbook } from "@theorderbookdex/orderbook-dex/contracts/interfaces/
 
 interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     /**
-     * A signature and its signer.
-     */
-    struct Signature {
-        address signer;
-        bytes   signature;
-    }
-
-    /**
      * A contract function call.
      */
     struct Call {
@@ -66,9 +58,9 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     error CannotSelfSign();
 
     /**
-     * Error thrown when a function is called with a signature by an account that is not a valid signer.
+     * Error thrown if signatures are not sorted by signer address.
      */
-    error ExtraneousSignature();
+    error SignaturesOutOfOrder();
 
     /**
      * Error thrown when a function is called with more than one signature from the same account.
@@ -103,8 +95,8 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      *
      * Only a signer can call this.
      *
-     * Requires the signatures of others to execute. The signed data must include the
-     * address of the signer, the address of the executor, and the nonce.
+     * Requires the signatures of others to execute. Signatures must be sorted by signer address.
+     * The signed data must include the address of the executor, and the nonce.
      *
      * @param signerToRemove the signer to remove
      * @param signerToAdd    the signer to add
@@ -112,10 +104,10 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * @param signatures     the signatures authorizing the operation
      */
     function replaceSigner(
-        address              signerToRemove,
-        address              signerToAdd,
-        uint256              deadline,
-        Signature[] calldata signatures
+        address          signerToRemove,
+        address          signerToAdd,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external;
 
     /**
@@ -123,8 +115,8 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      *
      * Only a signer can call this.
      *
-     * Requires the signatures of others to execute. The signed data must include the
-     * address of the signer, the address of the executor, and the nonce.
+     * Requires the signatures of others to execute. Signatures must be sorted by signer address.
+     * The signed data must include the address of the executor, and the nonce.
      *
      * @param version    the orderbook version
      * @param fee        the fee
@@ -132,10 +124,10 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * @param signatures the signatures authorizing the operation
      */
     function changeFee(
-        uint32               version,
-        uint256              fee,
-        uint256              deadline,
-        Signature[] calldata signatures
+        uint32           version,
+        uint256          fee,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external;
 
     /**
@@ -156,8 +148,8 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      *
      * Only a signer can call this.
      *
-     * Requires the signatures of others to execute. The signed data must include the
-     * address of the signer, the address of the executor, and the nonce.
+     * Requires the signatures of others to execute. Signatures must be sorted by signer address.
+     * The signed data must include the address of the executor, and the nonce.
      *
      * @param target     the contract to call
      * @param data       the call data
@@ -165,10 +157,10 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * @param signatures the signatures authorizing the operation
      */
     function call(
-        address              target,
-        bytes calldata       data,
-        uint256              deadline,
-        Signature[] calldata signatures
+        address          target,
+        bytes calldata   data,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external;
 
     /**

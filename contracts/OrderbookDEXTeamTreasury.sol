@@ -26,7 +26,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     /**
      * Accounts allowed to sign and call fund administration functions.
      */
-    mapping(address => bool) private _signers;
+    mapping(address => address) private _signers;
 
     /**
      * How many signatures are required for an action that requires authorization.
@@ -57,7 +57,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         }
 
         for (uint256 i; i < signers_.length; i++) {
-            _signers[signers_[i]] = true;
+            _signers[signers_[i]] = signers_[i];
             emit SignerAdded(signers_[i]);
         }
 
@@ -75,16 +75,16 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     );
 
     function replaceSigner(
-        address              signerToRemove,
-        address              signerToAdd,
-        uint256              deadline,
-        Signature[] calldata signatures
+        address          signerToRemove,
+        address          signerToAdd,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
-        if (!_signers[signerToRemove]) {
+        if (_signers[signerToRemove] != signerToRemove) {
             revert SignerToRemoveIsNotASigner();
         }
 
-        if (_signers[signerToAdd]) {
+        if (_signers[signerToAdd] == signerToAdd) {
             revert SignerToAddIsAlreadyASigner();
         }
 
@@ -102,8 +102,8 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         checkSignatures(executor, signatures, digest);
 
         _nonce = nonce_ + 1;
-        _signers[signerToRemove] = false;
-        _signers[signerToAdd] = true;
+        _signers[signerToRemove] = address(0);
+        _signers[signerToAdd] = signerToAdd;
 
         emit SignerRemoved(signerToRemove);
         emit SignerAdded(signerToAdd);
@@ -120,10 +120,10 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     );
 
     function changeFee(
-        uint32               version,
-        uint256              fee_,
-        uint256              deadline,
-        Signature[] calldata signatures
+        uint32           version,
+        uint256          fee_,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
         // TODO fee changes that increase fee must be timelocked
 
@@ -165,10 +165,10 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     );
 
     function call(
-        address              target,
-        bytes calldata       data,
-        uint256              deadline,
-        Signature[] calldata signatures
+        address          target,
+        bytes calldata   data,
+        uint256          deadline,
+        bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
@@ -189,7 +189,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     }
 
     function signers(address account) external view returns (bool) {
-        return _signers[account];
+        return _signers[account] == account;
     }
 
     function signaturesRequired() external view returns (uint256) {
@@ -212,34 +212,36 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
      * @param digest     the hash for the structured data
      */
     function checkSignatures(
-        address              executor,
-        Signature[] calldata signatures,
-        bytes32              digest
+        address          executor,
+        bytes[] calldata signatures,
+        bytes32          digest
     ) internal view {
         if (signatures.length < _signaturesRequired) {
             revert NotEnoughSignatures();
         }
 
+        address prevSigner = address(0);
+
         for (uint256 i; i < signatures.length; i++) {
-            address signer = signatures[i].signer;
+            address signer = ECDSA.recover(digest, signatures[i]);
+
+            if (signer < prevSigner) {
+                revert SignaturesOutOfOrder();
+            }
+
+            if (signer == prevSigner) {
+                revert DuplicateSignature();
+            }
 
             if (signer == executor) {
                 revert CannotSelfSign();
             }
 
-            if (!_signers[signer]) {
-                revert ExtraneousSignature();
-            }
-
-            for (uint256 j; j < i; j++) {
-                if (signer == signatures[j].signer) {
-                    revert DuplicateSignature();
-                }
-            }
-
-            if (signer != ECDSA.recover(digest, signatures[i].signature)) {
+            if (_signers[signer] != signer) {
                 revert InvalidSignature();
             }
+
+            prevSigner = signer;
         }
     }
 
@@ -247,7 +249,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
      * Modifier for functions that can only be called by a signer.
      */
     modifier onlySigner() {
-        if (!_signers[msg.sender]) {
+        if (_signers[msg.sender] != msg.sender) {
             revert Unauthorized();
         }
         _;

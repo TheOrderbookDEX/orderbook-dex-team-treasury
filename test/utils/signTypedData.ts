@@ -16,10 +16,10 @@ export async function signTypedData({
     types: Record<string, unknown>;
     primaryType: string;
     message: unknown;
-}): Promise<[Address, string][]> {
+}): Promise<string[]> {
     const provider = getProvider();
     const chainId = await provider.getSigner().getChainId();
-    const signatures: [Address, string][] = [];
+    const signatures: string[] = [];
     for (const signer of signers) {
         const signature: string = await provider.send('eth_signTypedData', [
             signer,
@@ -43,7 +43,7 @@ export async function signTypedData({
                 message: stringify(message),
             }
         ]);
-        signatures.push([ signer, signature ]);
+        signatures.push(signature);
     }
     return signatures;
 }

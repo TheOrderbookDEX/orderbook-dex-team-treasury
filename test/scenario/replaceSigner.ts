@@ -3,6 +3,7 @@ import { Account, EthereumSetupContext, now, TestSetupContext } from '@frugal-wi
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
+import { compareHexString } from '../utils/compareHexString';
 import { signTypedData } from '../utils/signTypedData';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
@@ -62,8 +63,9 @@ export function createReplaceSignerScenario({
                 const deadlineTimestamp = now() + deadline;
                 const callerAddress = ctx[caller];
                 const nonce = await ctx.treasury.nonce();
+                const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 const actualSignatures = await signTypedData({
-                    signers: signatures.map(signer => ctx[signer]),
+                    signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
                     domainVersion: '1',
                     verifyingContract: ctx.treasury.address,
