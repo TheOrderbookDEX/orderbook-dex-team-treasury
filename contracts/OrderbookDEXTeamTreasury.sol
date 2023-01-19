@@ -178,7 +178,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
             CALL_TYPEHASH,
             executor,
             target,
-            data,
+            keccak256(data),
             nonce_,
             deadline
         )));

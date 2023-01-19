@@ -36,11 +36,11 @@ export async function signTypedData({
                 domain: {
                     name: domainName,
                     version: domainVersion,
-                    chainId: String(chainId),
+                    chainId,
                     verifyingContract,
                 },
                 primaryType,
-                message: stringify(message),
+                message: normalizeMessage(message),
             }
         ]);
         signatures.push(signature);
@@ -48,14 +48,17 @@ export async function signTypedData({
     return signatures;
 }
 
-function stringify(value: unknown): unknown {
+function normalizeMessage(value: unknown): unknown {
     if (Array.isArray(value)) {
-        return value.map(stringify);
+        return value.map(normalizeMessage);
 
     } else if (typeof(value) == 'object' && value !== null) {
-        return Object.fromEntries(Object.entries(value).map(([k,v]) => [k,stringify(v)]));
+        return Object.fromEntries(Object.entries(value).map(([k,v]) => [k,normalizeMessage(v)]));
+
+    } else if (typeof(value) == 'bigint') {
+        return String(value);
 
     } else {
-        return String(value);
+        return value;
     }
 }

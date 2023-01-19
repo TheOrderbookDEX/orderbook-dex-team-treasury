@@ -1,6 +1,7 @@
 import { Address } from '@frugal-wizard/abi2ts-lib';
 import { Account, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
+import { CallableMock } from '../../src/testing/CallableMock';
 import { OrderbookMock } from '../../src/testing/OrderbookMock';
 
 export enum Orderbook {
@@ -14,13 +15,23 @@ type Orderbooks = {
     [orderbook in Orderbook]: OrderbookMock;
 }
 
+export enum Callable {
+    FIRST  = 'firstContract',
+    SECOND = 'secondContract',
+    THIRD  = 'thirdContract',
+}
+
+type Callables = {
+    [callable in Callable]: CallableMock;
+}
+
 export type TreasuryScenario<Context> = EthereumScenario<Context>;
 
 export type TreasuryContext = {
     readonly treasury: OrderbookDEXTeamTreasury;
     readonly signers: Address[];
     readonly signaturesRequired: bigint;
-} & Orderbooks;
+} & Orderbooks & Callables;
 
 export interface TreasuryProperties {
     signers?: Account[];
@@ -51,6 +62,9 @@ export function createTreasuryScenario<Context>({
                 const secondOrderbook  = await OrderbookMock.deploy(false);
                 const thirdOrderbook   = await OrderbookMock.deploy(false);
                 const erroredOrderbook = await OrderbookMock.deploy(true);
+                const firstContract  = await CallableMock.deploy();
+                const secondContract = await CallableMock.deploy();
+                const thirdContract  = await CallableMock.deploy();
                 return setup({
                     ...ctx,
                     treasury,
@@ -60,6 +74,9 @@ export function createTreasuryScenario<Context>({
                     secondOrderbook,
                     thirdOrderbook,
                     erroredOrderbook,
+                    firstContract,
+                    secondContract,
+                    thirdContract,
                 });
             },
         })
