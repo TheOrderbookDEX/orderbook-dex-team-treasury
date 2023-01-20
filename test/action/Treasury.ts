@@ -1,6 +1,4 @@
 import { EthereumSetupContext, SetupAction } from '@frugal-wizard/contract-test-helper';
-import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
+import { TreasuryContext } from '../scenario/Treasury';
 
-export type TreasuryAction = SetupAction<{
-    treasury: OrderbookDEXTeamTreasury;
-} & EthereumSetupContext>;
+export type TreasuryAction = SetupAction<TreasuryContext & EthereumSetupContext>;

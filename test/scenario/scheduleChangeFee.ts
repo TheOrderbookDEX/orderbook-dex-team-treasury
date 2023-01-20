@@ -1,6 +1,5 @@
 import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
-import { TreasuryAction } from '../action/Treasury';
+import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
@@ -9,7 +8,7 @@ import { compareHexString } from '../utils/compareHexString';
 import { signTypedData } from '../utils/signTypedData';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
-export type ChangeFeeScenario = {
+export type ScheduleChangeFeeScenario = {
     readonly version: bigint,
     readonly fee: bigint,
     readonly caller: Account,
@@ -20,7 +19,7 @@ export type ChangeFeeScenario = {
     executeStatic(): Promise<void>;
 }>;
 
-export function createChangeFeeScenario({
+export function createScheduleChangeFeeScenario({
     only,
     description,
     version,
@@ -31,21 +30,19 @@ export function createChangeFeeScenario({
     reverseSignatures = false,
     nonce,
     expectedError,
-    setupActions = [],
     ...rest
 }: {
     only?: boolean;
     description?: string;
-    version: bigint,
-    fee: bigint,
-    deadline?: bigint,
-    signatures: Account[],
+    version: bigint;
+    fee: bigint;
+    deadline?: bigint;
+    signatures: Account[];
     caller?: Account;
     reverseSignatures?: boolean;
     nonce?: bigint;
     expectedError?: ContractError;
-    setupActions?: TreasuryAction[];
-} & TreasuryProperties): ChangeFeeScenario {
+} & TreasuryProperties): ScheduleChangeFeeScenario {
     return {
         version,
         fee,
@@ -54,13 +51,11 @@ export function createChangeFeeScenario({
 
         ...createTreasuryScenario({
             only,
-            description: description || `change fee for ${describeVersion(version)} to ${formatValue(fee)}${
-                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${
-                describeSetupActions(setupActions)}${describeTreasuryProps(rest)}`,
+            description: description || `schedule change fee for ${describeVersion(version)} to ${formatValue(fee)}${
+                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${describeTreasuryProps(rest)}`,
             ...rest,
 
             async setup(ctx) {
-                await executeSetupActions(setupActions, { ...ctx });
                 ctx.addContext('version', version);
                 ctx.addContext('fee', formatValue(fee));
                 ctx.addContext('deadline', deadline);
@@ -79,7 +74,7 @@ export function createChangeFeeScenario({
                     domainVersion: '1',
                     verifyingContract: ctx.treasury.address,
                     types: {
-                        ChangeFee: [
+                        ScheduleChangeFee: [
                             { name: 'executor', type: 'address' },
                             { name: 'nonce',    type: 'uint256' },
                             { name: 'version',  type: 'uint32' },
@@ -87,7 +82,7 @@ export function createChangeFeeScenario({
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
-                    primaryType: 'ChangeFee',
+                    primaryType: 'ScheduleChangeFee',
                     message: {
                         executor: callerAddress,
                         nonce:    actualNonce,
@@ -99,10 +94,10 @@ export function createChangeFeeScenario({
                 return {
                     ...ctx,
                     caller: callerAddress,
-                    execute: () => ctx.treasury.changeFee(
+                    execute: () => ctx.treasury.scheduleChangeFee(
                         version, fee, deadlineTimestamp, actualSignatures, { from: callerAddress }
                     ),
-                    executeStatic: () => ctx.treasury.callStatic.changeFee(
+                    executeStatic: () => ctx.treasury.callStatic.scheduleChangeFee(
                         version, fee, deadlineTimestamp, actualSignatures, { from: callerAddress }
                     ),
                 };

@@ -1,5 +1,5 @@
-import { Address, ContractError, formatValue, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, now, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
@@ -52,7 +52,7 @@ export function createCallScenario({
     reverseSignatures?: boolean;
     nonce?: bigint;
     expectedError?: ContractError;
-    setupActions?: TreasuryAction[],
+    setupActions?: TreasuryAction[];
 } & TreasuryProperties): CallScenario {
     const data = encodeCall(method, argTypes, argValues);
     return {
@@ -82,9 +82,9 @@ export function createCallScenario({
                 ctx.addContext('reverseSignatures', reverseSignatures);
                 ctx.addContext('nonce', nonce ?? 'current');
                 const targetAddress = ctx[target].address;
-                const deadlineTimestamp = now() + deadline;
-                const callerAddress = ctx[caller];
                 const actualNonce = nonce ?? await ctx.treasury.nonce();
+                const deadlineTimestamp = BigInt(await getBlockTimestamp()) + deadline;
+                const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSignatures) signersAddresses.reverse();
                 const actualSignatures = await signTypedData({

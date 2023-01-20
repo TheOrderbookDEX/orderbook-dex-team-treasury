@@ -8,6 +8,21 @@ import { IOrderbook } from "@theorderbookdex/orderbook-dex/contracts/interfaces/
 
 interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     /**
+     * Scheduled fee change.
+     */
+    struct ScheduledFee {
+        /**
+         * The fee.
+         */
+        uint256 fee;
+
+        /**
+         * The time the change of fee is scheduled for.
+         */
+        uint256 time;
+    }
+
+    /**
      * A contract function call.
      */
     struct Call {
@@ -29,6 +44,15 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * @param signer the signer removed
      */
     event SignerRemoved(address signer);
+
+    /**
+     * Event emitted when a change of fee is scheduled.
+     *
+     * @param version the orderbook version
+     * @param fee     the fee
+     * @param time    the time the change of fee is scheduled for
+     */
+    event FeeChangeScheduled(uint32 version, uint256 fee, uint256 time);
 
     /**
      * Event emitted when a fee is changed.
@@ -92,6 +116,45 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     error SignerToAddIsAlreadyASigner();
 
     /**
+     * Error thrown when unable to change fee.
+     *
+     * Check changeFee() for reasons why a change of fee might fail.
+     */
+    error CannotChangeFee();
+
+    /**
+     * Schedule a change of fee for an orderbook version.
+     *
+     * There can only be one pending change of fee per orderbook version. Calling this function again will cancel
+     * pending changes and reset the timer for the orderbook version.
+     *
+     * Only a signer can call this.
+     *
+     * Requires the signatures of others to execute. Signatures must be sorted by signer address.
+     *
+     * Signatures must follow EIP-712 spec for the following data structure:
+     *
+     *     ScheduleChangeFee(
+     *       address executor,
+     *       uint256 nonce,
+     *       uint32  version,
+     *       uint256 fee,
+     *       uint256 deadline
+     *     )
+     *
+     * @param version    the orderbook version
+     * @param fee        the fee
+     * @param deadline   the timestamp until which the operation remains valid
+     * @param signatures the signatures authorizing the operation
+     */
+    function scheduleChangeFee(
+        uint32           version,
+        uint256          fee,
+        uint256          deadline,
+        bytes[] calldata signatures
+    ) external;
+
+    /**
      * Replace a signer by another.
      *
      * Only a signer can call this.
@@ -122,6 +185,10 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
 
     /**
      * Change the fee for an orderbook version.
+     *
+     * Increase of fees must be scheduled beforehand.
+     *
+     * A change of fee will cancel any pending change of fee for the orderbook version.
      *
      * Only a signer can call this.
      *
@@ -212,6 +279,13 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     function signaturesRequired() external view returns (uint256 signaturesRequired);
 
     /**
+     * The time that has to elapse for the execution of a scheduled action.
+     *
+     * @return executionDelay the time that has to elapse for the execution of a scheduled action
+     */
+    function executionDelay() external view returns (uint256 executionDelay);
+
+    /**
      * The next nonce for the execution of any of the functions which require one.
      *
      * Nonces are sequential.
@@ -219,4 +293,12 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * @return nonce the nonce
      */
     function nonce() external view returns (uint256 nonce);
+
+    /**
+     * Scheduled fee change.
+     *
+     * @param  version the orderbook version of the scheduled fee change
+     * @return fee     the scheduled fee change
+     */
+    function scheduledFee(uint32 version) external view returns (ScheduledFee memory fee);
 }

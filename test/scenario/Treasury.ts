@@ -31,11 +31,13 @@ export type TreasuryContext = {
     readonly treasury: OrderbookDEXTeamTreasury;
     readonly signers: Address[];
     readonly signaturesRequired: bigint;
+    readonly executionDelay: bigint;
 } & Orderbooks & Callables;
 
 export interface TreasuryProperties {
     signers?: Account[];
     signaturesRequired?: bigint;
+    executionDelay?: bigint;
 }
 
 export function createTreasuryScenario<Context>({
@@ -43,6 +45,7 @@ export function createTreasuryScenario<Context>({
     description,
     signers = [ Account.MAIN, Account.SECOND ],
     signaturesRequired = 1n,
+    executionDelay = 0n,
     setup,
 }: {
     only?: boolean;
@@ -57,7 +60,8 @@ export function createTreasuryScenario<Context>({
             async setup(ctx) {
                 ctx.addContext('signers', signers);
                 ctx.addContext('signaturesRequired', signaturesRequired);
-                const treasury = await OrderbookDEXTeamTreasury.deploy(signers.map(signer => ctx[signer]), signaturesRequired);
+                ctx.addContext('executionDelay', executionDelay);
+                const treasury = await OrderbookDEXTeamTreasury.deploy(signers.map(signer => ctx[signer]), signaturesRequired, executionDelay);
                 const firstOrderbook   = await OrderbookMock.deploy(false);
                 const secondOrderbook  = await OrderbookMock.deploy(false);
                 const thirdOrderbook   = await OrderbookMock.deploy(false);
@@ -70,6 +74,7 @@ export function createTreasuryScenario<Context>({
                     treasury,
                     signers: signers.map(signer => ctx[signer]),
                     signaturesRequired,
+                    executionDelay,
                     firstOrderbook,
                     secondOrderbook,
                     thirdOrderbook,
@@ -84,8 +89,9 @@ export function createTreasuryScenario<Context>({
 }
 
 export function describeTreasuryProps({
-    signers: signers,
+    signers,
     signaturesRequired,
+    executionDelay,
 }: TreasuryProperties): string {
     const description = [];
     if (signers) {
@@ -93,6 +99,9 @@ export function describeTreasuryProps({
     }
     if (signaturesRequired !== undefined) {
         description.push(`signaturesRequired = ${signaturesRequired}`);
+    }
+    if (executionDelay !== undefined) {
+        description.push(`executionDelay = ${executionDelay}`);
     }
     return description.length ? ` with ${description.join(' and ')}` : '';
 }

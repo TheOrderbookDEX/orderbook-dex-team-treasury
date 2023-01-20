@@ -30,6 +30,12 @@ describe('deploy', () => {
                         .to.be.equal(test.signaturesRequired);
                 });
 
+                it('should deploy with expected execution delay', async (test) => {
+                    const treasury = await test.execute();
+                    expect(await treasury.executionDelay())
+                        .to.be.equal(test.executionDelay);
+                });
+
                 it('should deploy with expected signers', async (test) => {
                     const treasury = await test.execute();
                     for (const signer of test.signers) {

@@ -13,6 +13,11 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     using Address for address;
 
+    struct Fee {
+        uint32  version;
+        uint256 fee;
+    }
+
     /**
      * Name. Used for EIP712 signatures.
      */
@@ -34,6 +39,11 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     uint256 private immutable _signaturesRequired;
 
     /**
+     * The time that has to elapse for the execution of a scheduled action.
+     */
+    uint256 private immutable _executionDelay;
+
+    /**
      * The next nonce for the execution of any of the functions which require one.
      */
     uint256 _nonce;
@@ -44,12 +54,22 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     mapping(uint32 => uint256) _fee;
 
     /**
+     * The current fee applied to orderbooks of a specific version.
+     */
+    mapping(uint32 => ScheduledFee) _scheduledFee;
+
+    /**
      * Constructor.
      *
      * @param signers_            accounts allowed to sign and call fund administration functions
      * @param signaturesRequired_ how many signatures are required for an action that requires authorization
+     * @param executionDelay_     the time that has to elapse for the execution of a scheduled action
      */
-    constructor(address[] memory signers_, uint256 signaturesRequired_)
+    constructor(
+        address[] memory signers_,
+        uint256          signaturesRequired_,
+        uint256          executionDelay_
+    )
         EIP712(NAME, VERSION)
     {
         if (signaturesRequired_ >= signers_.length) {
@@ -62,6 +82,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         }
 
         _signaturesRequired = signaturesRequired_;
+        _executionDelay = executionDelay_;
     }
 
     bytes32 constant REPLACE_SIGNER_TYPEHASH = keccak256(
@@ -109,6 +130,43 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         emit SignerAdded(signerToAdd);
     }
 
+    bytes32 constant SCHEDULE_CHANGE_FEE_TYPEHASH = keccak256(
+        "ScheduleChangeFee("
+            "address executor,"
+            "uint256 nonce,"
+             "uint32 version,"
+            "uint256 fee,"
+            "uint256 deadline"
+        ")"
+    );
+
+    function scheduleChangeFee(
+        uint32           version,
+        uint256          fee_,
+        uint256          deadline,
+        bytes[] calldata signatures
+    ) external onlySigner validUntil(deadline) {
+        address executor = msg.sender;
+        uint256 nonce_ = _nonce;
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            SCHEDULE_CHANGE_FEE_TYPEHASH,
+            executor,
+            nonce_,
+            version,
+            fee_,
+            deadline
+        )));
+
+        checkSignatures(executor, signatures, digest);
+
+        uint256 time = block.timestamp + _executionDelay;
+
+        _nonce = nonce_ + 1;
+        _scheduledFee[version] = ScheduledFee(fee_, time);
+
+        emit FeeChangeScheduled(version, fee_, time);
+    }
+
     bytes32 constant CHANGE_FEE_TYPEHASH = keccak256(
         "ChangeFee("
             "address executor,"
@@ -125,7 +183,17 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         uint256          deadline,
         bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
-        // TODO fee changes that increase fee must be timelocked
+        if (fee_ > _fee[version]) {
+            ScheduledFee memory scheduledFee_ = _scheduledFee[version];
+
+            if (fee_ > scheduledFee_.fee) {
+                revert CannotChangeFee();
+            }
+
+            if (block.timestamp < scheduledFee_.time) {
+                revert CannotChangeFee();
+            }
+        }
 
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
@@ -142,6 +210,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
         _nonce = nonce_ + 1;
         _fee[version] = fee_;
+        delete _scheduledFee[version];
 
         emit FeeChanged(version, fee_);
     }
@@ -201,12 +270,20 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         return _signaturesRequired;
     }
 
+    function executionDelay() external view returns (uint256) {
+        return _executionDelay;
+    }
+
     function nonce() external view returns (uint256) {
         return _nonce;
     }
 
     function fee(uint32 version) external view returns (uint256) {
         return _fee[version];
+    }
+
+    function scheduledFee(uint32 version) external view returns (ScheduledFee memory) {
+        return _scheduledFee[version];
     }
 
     receive() external payable {}

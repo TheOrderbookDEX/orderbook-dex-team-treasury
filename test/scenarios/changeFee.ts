@@ -1,6 +1,8 @@
 import { MAX_UINT256, parseValue } from '@frugal-wizard/abi2ts-lib';
 import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
-import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
+import { AfterDeadline, CannotChangeFee, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
+import { createScheduleChangeFeeAction } from '../action/scheduleChangeFee';
+import { createWaitExecutionDelayAction } from '../action/waitExecutionDelay';
 import { createChangeFeeScenario } from '../scenario/changeFee';
 
 export const changeFeeScenarios = [
@@ -13,6 +15,22 @@ export const changeFeeScenarios = [
         for (const fee of [ parseValue('0.001'), parseValue('0.002') ]) {
             yield { ...props, fee };
         }
+
+    }).then(function*(props) {
+        for (const executionDelay of [ undefined, 60n ]) {
+            yield { ...props, executionDelay };
+        }
+
+    }).then(function*(props) {
+        const { version, fee } = props;
+
+        yield {
+            ...props,
+            setupActions: [
+                createScheduleChangeFeeAction({ version, fee }),
+                createWaitExecutionDelayAction(),
+            ],
+        };
 
     }).then(function*(props) {
         yield {
@@ -36,68 +54,113 @@ export const changeFeeScenarios = [
     }).then(function*(props) {
         yield createChangeFeeScenario(props);
     }),
-    createChangeFeeScenario({
-        description: 'change fee using unathorized account',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        caller: Account.THIRD,
-        signatures: [ Account.SECOND ],
-        expectedError: new Unauthorized(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee using unathorized account signature',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signatures: [ Account.THIRD ],
-        expectedError: new InvalidSignature(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee not providing enough signatures',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signatures: [],
-        expectedError: new NotEnoughSignatures(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee using self signed signature',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signatures: [ Account.MAIN ],
-        expectedError: new CannotSelfSign(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee using duplicate signature',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
-        signaturesRequired: 2n,
-        signatures: [ Account.SECOND, Account.SECOND ],
-        expectedError: new DuplicateSignature(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee using signatures out of order',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
-        signaturesRequired: 2n,
-        signatures: [ Account.SECOND, Account.THIRD ],
-        reverseSignatures: true,
-        expectedError: new SignaturesOutOfOrder(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee using wrong nonce',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signatures: [ Account.SECOND ],
-        nonce: MAX_UINT256,
-        expectedError: new InvalidSignature(),
-    }),
-    createChangeFeeScenario({
-        description: 'change fee after deadline',
-        version: 10000n,
-        fee: parseValue('0.001'),
-        signatures: [ Account.SECOND ],
-        deadline: -60n,
-        expectedError: new AfterDeadline(),
+
+    ...generatorChain(function*() {
+        const version = 10000n;
+        const fee = parseValue('0.001');
+
+        yield {
+            version,
+            fee,
+            signatures: [ Account.SECOND ],
+            executionDelay: 60n,
+            setupActions: [
+                createScheduleChangeFeeAction({ version, fee }),
+                createWaitExecutionDelayAction(),
+            ],
+        };
+
+    }).then(function*(props) {
+        const { version, fee } = props;
+
+        yield {
+            ...props,
+            description: 'change fee using unathorized account',
+            caller: Account.THIRD,
+            expectedError: new Unauthorized(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee using unathorized account signature',
+            signatures: [ Account.THIRD ],
+            expectedError: new InvalidSignature(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee not providing enough signatures',
+            signatures: [],
+            expectedError: new NotEnoughSignatures(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee using self signed signature',
+            signatures: [ Account.MAIN ],
+            expectedError: new CannotSelfSign(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee using duplicate signature',
+            signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
+            signaturesRequired: 2n,
+            signatures: [ Account.SECOND, Account.SECOND ],
+            expectedError: new DuplicateSignature(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee using signatures out of order',
+            signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
+            signaturesRequired: 2n,
+            signatures: [ Account.SECOND, Account.THIRD ],
+            reverseSignatures: true,
+            expectedError: new SignaturesOutOfOrder(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee using wrong nonce',
+            nonce: MAX_UINT256,
+            expectedError: new InvalidSignature(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee after deadline',
+            deadline: -60n,
+            expectedError: new AfterDeadline(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee without scheduling',
+            setupActions: [],
+            expectedError: new CannotChangeFee(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee before scheduled time',
+            setupActions: [
+                createScheduleChangeFeeAction({ version, fee }),
+            ],
+            expectedError: new CannotChangeFee(),
+        };
+
+        yield {
+            ...props,
+            description: 'change fee above scheduled fee',
+            setupActions: [
+                createScheduleChangeFeeAction({ version, fee: fee - 1n }),
+                createWaitExecutionDelayAction(),
+            ],
+            expectedError: new CannotChangeFee(),
+        };
+
+    }).then(function*(props) {
+        yield createChangeFeeScenario(props);
     }),
 ];

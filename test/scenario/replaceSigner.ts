@@ -1,5 +1,5 @@
-import { Address, ContractError, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, EthereumSetupContext, now, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
@@ -60,9 +60,9 @@ export function createReplaceSignerScenario({
                 ctx.addContext('caller', caller);
                 const signerToRemoveAddress = ctx[signerToRemove];
                 const signerToAddAddress = ctx[signerToAdd];
-                const deadlineTimestamp = now() + deadline;
-                const callerAddress = ctx[caller];
                 const nonce = await ctx.treasury.nonce();
+                const deadlineTimestamp = BigInt(await getBlockTimestamp()) + deadline;
+                const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 const actualSignatures = await signTypedData({
                     signers: signersAddresses,
