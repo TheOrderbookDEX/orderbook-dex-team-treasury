@@ -13,6 +13,7 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     struct Call {
         address target;
         bytes   data;
+        uint256 value;
     }
 
     /**
@@ -175,17 +176,20 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      *       uint256 nonce,
      *       address target,
      *       bytes   data,
+     *       uint256 value,
      *       uint256 deadline
      *     )
      *
      * @param target     the contract to call
      * @param data       the call data
+     * @param value      the eth sent with call
      * @param deadline   the timestamp until which the operation remains valid
      * @param signatures the signatures authorizing the operation
      */
     function call(
         address          target,
         bytes calldata   data,
+        uint256          value,
         uint256          deadline,
         bytes[] calldata signatures
     ) external;

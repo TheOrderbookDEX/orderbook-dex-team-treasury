@@ -162,6 +162,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
             "uint256 nonce,"
             "address target,"
               "bytes data,"
+            "uint256 value,"
             "uint256 deadline"
         ")"
     );
@@ -169,6 +170,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     function call(
         address          target,
         bytes calldata   data,
+        uint256          value,
         uint256          deadline,
         bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
@@ -180,6 +182,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
             nonce_,
             target,
             keccak256(data),
+            value,
             deadline
         )));
 
@@ -187,7 +190,7 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
         _nonce = nonce_ + 1;
 
-        target.functionCall(data);
+        target.functionCallWithValue(data, value);
     }
 
     function signers(address account) external view returns (bool) {
@@ -205,6 +208,8 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     function fee(uint32 version) external view returns (uint256) {
         return _fee[version];
     }
+
+    receive() external payable {}
 
     /**
      * Check the signatures used to call a function.

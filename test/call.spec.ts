@@ -33,6 +33,8 @@ describe('call', () => {
                         .to.be.equal(test.target);
                     expect(events[0].data)
                         .to.be.equal(scenario.data);
+                    expect(events[0].value)
+                        .to.be.equal(scenario.value);
                 });
 
                 it('should increase nonce', async (test) => {

@@ -1,6 +1,7 @@
 import { MAX_UINT256, parseValue } from '@frugal-wizard/abi2ts-lib';
 import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
 import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
+import { createSendEthToTreasuryAction } from '../action/sendEthToTreasury';
 import { createCallScenario } from '../scenario/call';
 import { Callable } from '../scenario/Treasury';
 
@@ -109,5 +110,17 @@ export const callScenarios = [
 
     }).then(function*(props) {
         yield createCallScenario(props);
+    }),
+
+    createCallScenario({
+        target: Callable.FIRST,
+        method: 'deposit',
+        argTypes: [],
+        argValues: [],
+        value: parseValue(1),
+        signatures: [ Account.SECOND ],
+        setupActions: [
+            createSendEthToTreasuryAction({ value: parseValue(1) }),
+        ],
     }),
 ];

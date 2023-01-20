@@ -1,5 +1,6 @@
-import { Address, ContractError, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, EthereumSetupContext, now, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, formatValue, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, now, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
@@ -11,6 +12,7 @@ import { Callable, createTreasuryScenario, describeTreasuryProps, TreasuryContex
 export type CallScenario = {
     readonly target: Callable,
     readonly data: string,
+    readonly value: bigint,
     readonly caller: Account,
     readonly expectedError?: ContractError;
 } & TreasuryScenario<TestSetupContext & EthereumSetupContext & TreasuryContext & {
@@ -27,12 +29,14 @@ export function createCallScenario({
     method,
     argTypes,
     argValues,
+    value = 0n,
     deadline = 60n,
     signatures,
     caller = Account.MAIN,
     reverseSignatures = false,
     nonce,
     expectedError,
+    setupActions = [],
     ...rest
 }: {
     only?: boolean;
@@ -41,31 +45,37 @@ export function createCallScenario({
     method: string;
     argTypes: string[];
     argValues: unknown[];
+    value?: bigint;
     deadline?: bigint;
     signatures: Account[];
     caller?: Account;
     reverseSignatures?: boolean;
     nonce?: bigint;
     expectedError?: ContractError;
+    setupActions?: TreasuryAction[],
 } & TreasuryProperties): CallScenario {
     const data = encodeCall(method, argTypes, argValues);
     return {
         target,
         data,
+        value,
         caller,
         expectedError,
 
         ...createTreasuryScenario({
             only,
-            description: description || `call ${target}.${method}(${argTypes.join(', ')}) with args = ${argValues.map(String).join(', ')}${
-                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${describeTreasuryProps(rest)}`,
+            description: description || `${describeCall({ target, method, argTypes, argValues, value })}${
+                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${
+                describeSetupActions(setupActions)}${describeTreasuryProps(rest)}`,
             ...rest,
 
             async setup(ctx) {
+                await executeSetupActions(setupActions, { ...ctx });
                 ctx.addContext('target', target);
                 ctx.addContext('method', method);
                 ctx.addContext('argTypes', argTypes);
                 ctx.addContext('argValues', argValues.map(String)); // TODO this has to be fixed in contract-test-helper
+                ctx.addContext('value', value);
                 ctx.addContext('deadline', deadline);
                 ctx.addContext('signatures', signatures);
                 ctx.addContext('caller', caller);
@@ -88,6 +98,7 @@ export function createCallScenario({
                             { name: 'nonce',    type: 'uint256' },
                             { name: 'target',   type: 'address' },
                             { name: 'data',     type: 'bytes'   },
+                            { name: 'value',    type: 'uint256' },
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
@@ -97,6 +108,7 @@ export function createCallScenario({
                         nonce:    actualNonce,
                         target:   targetAddress,
                         data:     data,
+                        value:    value,
                         deadline: deadlineTimestamp,
                     },
                 });
@@ -105,13 +117,34 @@ export function createCallScenario({
                     target: targetAddress,
                     caller: callerAddress,
                     execute: () => ctx.treasury.call(
-                        targetAddress, data, deadlineTimestamp, actualSignatures, { from: callerAddress }
+                        targetAddress, data, value, deadlineTimestamp, actualSignatures, { from: callerAddress }
                     ),
                     executeStatic: () => ctx.treasury.callStatic.call(
-                        targetAddress, data, deadlineTimestamp, actualSignatures, { from: callerAddress }
+                        targetAddress, data, value, deadlineTimestamp, actualSignatures, { from: callerAddress }
                     ),
                 };
             },
         }),
     };
+}
+
+function describeCall({
+    target,
+    method,
+    argTypes,
+    argValues,
+    value,
+}: {
+    target: Callable;
+    method: string;
+    argTypes: string[];
+    argValues: unknown[];
+    value: bigint;
+}): string {
+    const args: string[] = [];
+    args.push(`args = [${argValues.map(String).join(', ')}]`);
+    if (value) {
+        args.push(`value = ${formatValue(value)}`);
+    }
+    return `call ${target}.${method}(${argTypes.join(', ')}) with ${args.join(' and ')}`;
 }
