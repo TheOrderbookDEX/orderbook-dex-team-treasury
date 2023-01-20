@@ -96,7 +96,16 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * Only a signer can call this.
      *
      * Requires the signatures of others to execute. Signatures must be sorted by signer address.
-     * The signed data must include the address of the executor, and the nonce.
+     *
+     * Signatures must follow EIP-712 spec for the following data structure:
+     *
+     *     ReplaceSigner(
+     *       address executor,
+     *       uint256 nonce,
+     *       address signerToRemove,
+     *       address signerToAdd,
+     *       uint256 deadline
+     *     )
      *
      * @param signerToRemove the signer to remove
      * @param signerToAdd    the signer to add
@@ -116,7 +125,16 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * Only a signer can call this.
      *
      * Requires the signatures of others to execute. Signatures must be sorted by signer address.
-     * The signed data must include the address of the executor, and the nonce.
+     *
+     * Signatures must follow EIP-712 spec for the following data structure:
+     *
+     *     ChangeFee(
+     *       address executor,
+     *       uint256 nonce,
+     *       uint32  version,
+     *       uint256 fee,
+     *       uint256 deadline
+     *     )
      *
      * @param version    the orderbook version
      * @param fee        the fee
@@ -149,7 +167,16 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * Only a signer can call this.
      *
      * Requires the signatures of others to execute. Signatures must be sorted by signer address.
-     * The signed data must include the address of the executor, and the nonce.
+     *
+     * Signatures must follow EIP-712 spec for the following data structure:
+     *
+     *     Call(
+     *       address executor,
+     *       uint256 nonce,
+     *       address target,
+     *       bytes   data,
+     *       uint256 deadline
+     *     )
      *
      * @param target     the contract to call
      * @param data       the call data

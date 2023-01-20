@@ -76,18 +76,18 @@ export function createChangeFeeScenario({
                     types: {
                         ChangeFee: [
                             { name: 'executor', type: 'address' },
+                            { name: 'nonce',    type: 'uint256' },
                             { name: 'version',  type: 'uint32' },
                             { name: 'fee',      type: 'uint256' },
-                            { name: 'nonce',    type: 'uint256' },
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
                     primaryType: 'ChangeFee',
                     message: {
                         executor: callerAddress,
+                        nonce:    actualNonce,
                         version:  version,
                         fee:      fee,
-                        nonce:    actualNonce,
                         deadline: deadlineTimestamp,
                     },
                 });

@@ -67,9 +67,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     bytes32 constant REPLACE_SIGNER_TYPEHASH = keccak256(
         "ReplaceSigner("
             "address executor,"
+            "uint256 nonce,"
             "address signerToRemove,"
             "address signerToAdd,"
-            "uint256 nonce,"
             "uint256 deadline"
         ")"
     );
@@ -93,9 +93,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             REPLACE_SIGNER_TYPEHASH,
             executor,
+            nonce_,
             signerToRemove,
             signerToAdd,
-            nonce_,
             deadline
         )));
 
@@ -112,9 +112,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     bytes32 constant CHANGE_FEE_TYPEHASH = keccak256(
         "ChangeFee("
             "address executor,"
-            "uint32 version,"
-            "uint256 fee,"
             "uint256 nonce,"
+             "uint32 version,"
+            "uint256 fee,"
             "uint256 deadline"
         ")"
     );
@@ -132,9 +132,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             CHANGE_FEE_TYPEHASH,
             executor,
+            nonce_,
             version,
             fee_,
-            nonce_,
             deadline
         )));
 
@@ -159,9 +159,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     bytes32 constant CALL_TYPEHASH = keccak256(
         "Call("
             "address executor,"
-            "address target,"
-            "bytes data,"
             "uint256 nonce,"
+            "address target,"
+              "bytes data,"
             "uint256 deadline"
         ")"
     );
@@ -177,9 +177,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             CALL_TYPEHASH,
             executor,
+            nonce_,
             target,
             keccak256(data),
-            nonce_,
             deadline
         )));
 

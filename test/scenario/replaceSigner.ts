@@ -72,18 +72,18 @@ export function createReplaceSignerScenario({
                     types: {
                         ReplaceSigner: [
                             { name: 'executor',       type: 'address' },
+                            { name: 'nonce',          type: 'uint256' },
                             { name: 'signerToRemove', type: 'address' },
                             { name: 'signerToAdd',    type: 'address' },
-                            { name: 'nonce',          type: 'uint256' },
                             { name: 'deadline',       type: 'uint256' },
                         ],
                     },
                     primaryType: 'ReplaceSigner',
                     message: {
                         executor:       callerAddress,
+                        nonce:          nonce,
                         signerToRemove: signerToRemoveAddress,
                         signerToAdd:    signerToAddAddress,
-                        nonce:          nonce,
                         deadline:       deadlineTimestamp,
                     },
                 });

@@ -85,18 +85,18 @@ export function createCallScenario({
                     types: {
                         Call: [
                             { name: 'executor', type: 'address' },
+                            { name: 'nonce',    type: 'uint256' },
                             { name: 'target',   type: 'address' },
                             { name: 'data',     type: 'bytes'   },
-                            { name: 'nonce',    type: 'uint256' },
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
                     primaryType: 'Call',
                     message: {
                         executor: callerAddress,
+                        nonce:    actualNonce,
                         target:   targetAddress,
                         data:     data,
-                        nonce:    actualNonce,
                         deadline: deadlineTimestamp,
                     },
                 });
