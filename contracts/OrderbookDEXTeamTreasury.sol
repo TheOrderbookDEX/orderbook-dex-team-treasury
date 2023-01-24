@@ -8,8 +8,6 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
-// TODO add multicall
-
 contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
     using Address for address;
 
@@ -260,6 +258,60 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         _nonce = nonce_ + 1;
 
         target.functionCallWithValue(data, value);
+    }
+
+    bytes32 constant MULTICALL_TYPEHASH = keccak256(
+        "Multicall("
+            "address executor,"
+            "uint256 nonce,"
+             "Call[] calls,"
+            "uint256 deadline"
+        ")"
+        "Call("
+            "address target,"
+              "bytes data,"
+            "uint256 value"
+        ")"
+    );
+    bytes32 constant MULTICALL_CALL_TYPEHASH = keccak256(
+        "Call("
+            "address target,"
+              "bytes data,"
+            "uint256 value"
+        ")"
+    );
+
+    function multicall(
+        Call[] calldata  calls,
+        uint256          deadline,
+        bytes[] calldata signatures
+    ) external onlySigner validUntil(deadline) {
+        address executor = msg.sender;
+        uint256 nonce_ = _nonce;
+        bytes32[] memory callsHashes = new bytes32[](calls.length);
+        for (uint256 i = 0; i < calls.length; i++) {
+            callsHashes[i] = keccak256(abi.encode(
+                MULTICALL_CALL_TYPEHASH,
+                calls[i].target,
+                keccak256(calls[i].data),
+                calls[i].value
+            ));
+        }
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            MULTICALL_TYPEHASH,
+            executor,
+            nonce_,
+            keccak256(abi.encodePacked(callsHashes)),
+            deadline
+        )));
+
+        checkSignatures(executor, signatures, digest);
+
+        _nonce = nonce_ + 1;
+
+        for (uint256 i = 0; i < calls.length; i++) {
+            calls[i].target.functionCallWithValue(calls[i].data, calls[i].value);
+        }
     }
 
     function signers(address account) external view returns (bool) {

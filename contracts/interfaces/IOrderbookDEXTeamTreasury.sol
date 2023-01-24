@@ -262,6 +262,37 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     ) external;
 
     /**
+     * Call another contract.
+     *
+     * Only a signer can call this.
+     *
+     * Requires the signatures of others to execute. Signatures must be sorted by signer address.
+     *
+     * Signatures must follow EIP-712 spec for the following data structure:
+     *
+     *     Multicall(
+     *       address executor,
+     *       uint256 nonce,
+     *       Call[]  calls,
+     *       uint256 deadline
+     *     )
+     *     Call(
+     *       address target,
+     *       bytes   data,
+     *       uint256 value
+     *     )
+     *
+     * @param calls      the calls to execute
+     * @param deadline   the timestamp until which the operation remains valid
+     * @param signatures the signatures authorizing the operation
+     */
+    function multicall(
+        Call[] calldata  calls,
+        uint256          deadline,
+        bytes[] calldata signatures
+    ) external;
+
+    /**
      * Indicates if an address is a signer.
      *
      * @param  account  the account to check

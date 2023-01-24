@@ -3,21 +3,43 @@ import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
 import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { Fail } from '../../src/testing/CallableMock';
 import { createSendEthToTreasuryAction } from '../action/sendEthToTreasury';
-import { createCallScenario } from '../scenario/call';
+import { createMulticallScenario } from '../scenario/multicall';
 import { Callable } from '../scenario/Treasury';
 
-export const callScenarios = [
+export const multicallScenarios = [
     ...generatorChain(function*() {
-        for (const target of [ Callable.FIRST, Callable.SECOND ]) {
-            yield { target };
-        }
-
-    }).then(function*(props) {
         yield {
-            ...props,
-            method: 'transfer',
-            argTypes: [ 'address', 'uint256' ],
-            argValues: [ '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', parseValue(1) ],
+            calls: [
+                {
+                    target: Callable.FIRST,
+                    method: 'transfer',
+                    argTypes: [ 'address', 'uint256' ],
+                    argValues: [ '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', parseValue(1) ],
+                },
+                {
+                    target: Callable.SECOND,
+                    method: 'transfer',
+                    argTypes: [ 'address', 'uint256' ],
+                    argValues: [ '0xEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE', parseValue(2) ],
+                },
+            ],
+        };
+
+        yield {
+            calls: [
+                {
+                    target: Callable.SECOND,
+                    method: 'transfer',
+                    argTypes: [ 'address', 'uint256' ],
+                    argValues: [ '0xEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE', parseValue(2) ],
+                },
+                {
+                    target: Callable.FIRST,
+                    method: 'transfer',
+                    argTypes: [ 'address', 'uint256' ],
+                    argValues: [ '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', parseValue(1) ],
+                },
+            ],
         };
 
     }).then(function*(props) {
@@ -40,18 +62,29 @@ export const callScenarios = [
         };
 
     }).then(function*(props) {
-        yield createCallScenario(props);
+        yield createMulticallScenario(props);
     }),
 
-    createCallScenario({
-        target: Callable.FIRST,
-        method: 'deposit',
-        argTypes: [],
-        argValues: [],
-        value: parseValue(1),
+    createMulticallScenario({
+        calls: [
+            {
+                target: Callable.FIRST,
+                method: 'deposit',
+                argTypes: [],
+                argValues: [],
+                value: parseValue(1),
+            },
+            {
+                target: Callable.SECOND,
+                method: 'deposit',
+                argTypes: [],
+                argValues: [],
+                value: parseValue(2),
+            },
+        ],
         signatures: [ Account.SECOND ],
         setupActions: [
-            createSendEthToTreasuryAction({ value: parseValue(1) }),
+            createSendEthToTreasuryAction({ value: parseValue(3) }),
         ],
     }),
 
@@ -115,22 +148,49 @@ export const callScenarios = [
     }).then(function*(props) {
         yield {
             ...props,
-            target: Callable.FIRST,
-            method: 'transfer',
-            argTypes: [ 'address', 'uint256' ],
-            argValues: [ '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', parseValue(1) ],
+            calls: [
+                {
+                    target: Callable.FIRST,
+                    method: 'transfer',
+                    argTypes: [ 'address', 'uint256' ],
+                    argValues: [ '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', parseValue(1) ],
+                },
+            ],
         };
 
     }).then(function*(props) {
-        yield createCallScenario(props);
+        yield createMulticallScenario(props);
     }),
 
-    createCallScenario({
+    createMulticallScenario({
         description: 'call contract that reverts',
-        target: Callable.FIRST,
-        method: 'fail',
-        argTypes: [],
-        argValues: [],
+        calls: [
+            {
+                target: Callable.FIRST,
+                method: 'fail',
+                argTypes: [],
+                argValues: [],
+            },
+        ],
+        signatures: [ Account.SECOND ],
+        expectedError: new Fail(),
+    }),
+    createMulticallScenario({
+        description: 'call contract succesfully then contract that reverts',
+        calls: [
+            {
+                target: Callable.FIRST,
+                method: 'ok',
+                argTypes: [],
+                argValues: [],
+            },
+            {
+                target: Callable.SECOND,
+                method: 'fail',
+                argTypes: [],
+                argValues: [],
+            },
+        ],
         signatures: [ Account.SECOND ],
         expectedError: new Fail(),
     }),
