@@ -1,6 +1,6 @@
 import { MAX_UINT256, parseValue } from '@frugal-wizard/abi2ts-lib';
 import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
-import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
+import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidFee, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createScheduleChangeFeeScenario } from '../scenario/scheduleChangeFee';
 
 export const scheduleChangeFeeScenarios = [
@@ -44,31 +44,42 @@ export const scheduleChangeFeeScenarios = [
 
     ...generatorChain(function*() {
         yield {
+            version: 10000n,
+            fee: parseValue('0.001'),
+            signatures: [ Account.SECOND ],
+        };
+
+    }).then(function*(props) {
+        yield {
+            ...props,
             description: 'schedule change fee using unathorized account',
             caller: Account.THIRD,
-            signatures: [ Account.SECOND ],
             expectedError: new Unauthorized(),
         };
 
         yield {
+            ...props,
             description: 'schedule change fee using unathorized account signature',
             signatures: [ Account.THIRD ],
             expectedError: new InvalidSignature(),
         };
 
         yield {
+            ...props,
             description: 'schedule change fee not providing enough signatures',
             signatures: [],
             expectedError: new NotEnoughSignatures(),
         };
 
         yield {
+            ...props,
             description: 'schedule change fee using self signed signature',
             signatures: [ Account.MAIN ],
             expectedError: new CannotSelfSign(),
         };
 
         yield {
+            ...props,
             description: 'schedule change fee using duplicate signature',
             signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
             signaturesRequired: 2n,
@@ -77,6 +88,7 @@ export const scheduleChangeFeeScenarios = [
         };
 
         yield {
+            ...props,
             description: 'schedule change fee using signatures out of order',
             signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
             signaturesRequired: 2n,
@@ -86,24 +98,24 @@ export const scheduleChangeFeeScenarios = [
         };
 
         yield {
+            ...props,
             description: 'schedule change fee using wrong nonce',
-            signatures: [ Account.SECOND ],
             nonce: MAX_UINT256,
             expectedError: new InvalidSignature(),
         };
 
         yield {
+            ...props,
             description: 'schedule change fee after deadline',
-            signatures: [ Account.SECOND ],
             deadline: -60n,
             expectedError: new AfterDeadline(),
         };
 
-    }).then(function*(props) {
         yield {
             ...props,
-            version: 10000n,
-            fee: parseValue('0.001'),
+            description: 'schedule change fee using fee larger than max fee',
+            fee: parseValue('0.005') + 1n,
+            expectedError: new InvalidFee(),
         };
 
     }).then(function*(props) {

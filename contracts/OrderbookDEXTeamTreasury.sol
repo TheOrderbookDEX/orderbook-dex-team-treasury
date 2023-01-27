@@ -3,6 +3,8 @@
 pragma solidity 0.8.17;
 
 import { IOrderbookDEXTeamTreasury } from "./interfaces/IOrderbookDEXTeamTreasury.sol";
+import { OrderbookDEXTeamTreasuryUtil }
+    from "@theorderbookdex/orderbook-dex/contracts/utils/OrderbookDEXTeamTreasuryUtil.sol";
 import { IOrderbook } from "@theorderbookdex/orderbook-dex/contracts/interfaces/IOrderbook.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
@@ -144,6 +146,10 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         uint256          deadline,
         bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
+        if (fee_ > OrderbookDEXTeamTreasuryUtil.MAX_FEE) {
+            revert InvalidFee();
+        }
+
         address executor = msg.sender;
         uint256 nonce_ = _nonce;
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(

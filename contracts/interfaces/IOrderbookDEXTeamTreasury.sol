@@ -123,6 +123,11 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     error CannotChangeFee();
 
     /**
+     * Error thrown when trying to change fee above max fee.
+     */
+    error InvalidFee();
+
+    /**
      * Schedule a change of fee for an orderbook version.
      *
      * There can only be one pending change of fee per orderbook version. Calling this function again will cancel
