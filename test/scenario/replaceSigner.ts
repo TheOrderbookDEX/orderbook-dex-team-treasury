@@ -1,5 +1,6 @@
-import { Address, ContractError, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, getBlockTimestamp, Transaction, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
+import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
@@ -7,9 +8,11 @@ import { compareHexString } from '../utils/compareHexString';
 import { signTypedData } from '../utils/signTypedData';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
+type Signer = Account | '0x0000000000000000000000000000000000000000';
+
 export type ReplaceSignerScenario = {
     readonly signerToRemove: Account,
-    readonly signerToAdd: Account,
+    readonly signerToAdd: Signer,
     readonly caller: Account,
     readonly expectedError?: ContractError;
 } & TreasuryScenario<TestSetupContext & EthereumSetupContext & TreasuryContext & {
@@ -28,17 +31,23 @@ export function createReplaceSignerScenario({
     deadline = 60n,
     signatures,
     caller = Account.MAIN,
+    reverseSignatures = false,
+    nonce,
     expectedError,
+    setupActions = [],
     ...rest
 }: {
     only?: boolean;
     description?: string;
     signerToRemove: Account,
-    signerToAdd: Account,
+    signerToAdd: Signer,
     deadline?: bigint,
     signatures: Account[],
     caller?: Account;
+    reverseSignatures?: boolean;
+    nonce?: bigint;
     expectedError?: ContractError;
+    setupActions?: TreasuryAction[];
 } & TreasuryProperties): ReplaceSignerScenario {
     return {
         signerToRemove,
@@ -49,21 +58,26 @@ export function createReplaceSignerScenario({
         ...createTreasuryScenario({
             only,
             description: description || `replace signer ${signerToRemove} with ${signerToAdd}${
-                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${describeTreasuryProps(rest)}`,
+                describeDeadline(deadline)}${describeSignatures(signatures)}${describeCaller(caller)}${
+                describeSetupActions(setupActions)}${describeTreasuryProps(rest)}`,
             ...rest,
 
             async setup(ctx) {
+                await executeSetupActions(setupActions, { ...ctx });
                 ctx.addContext('signerToRemove', signerToRemove);
                 ctx.addContext('signerToAdd', signerToAdd);
                 ctx.addContext('deadline', deadline);
                 ctx.addContext('signatures', signatures);
                 ctx.addContext('caller', caller);
+                ctx.addContext('reverseSignatures', reverseSignatures);
+                ctx.addContext('nonce', nonce ?? 'current');
                 const signerToRemoveAddress = ctx[signerToRemove];
-                const signerToAddAddress = ctx[signerToAdd];
-                const nonce = await ctx.treasury.nonce();
+                const signerToAddAddress = signerToAdd == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[signerToAdd];
+                const actualNonce = nonce ?? await ctx.treasury.nonce();
                 const deadlineTimestamp = BigInt(await getBlockTimestamp()) + deadline;
                 const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
+                if (reverseSignatures) signersAddresses.reverse();
                 const actualSignatures = await signTypedData({
                     signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
@@ -81,7 +95,7 @@ export function createReplaceSignerScenario({
                     primaryType: 'ReplaceSigner',
                     message: {
                         executor:       callerAddress,
-                        nonce:          nonce,
+                        nonce:          actualNonce,
                         signerToRemove: signerToRemoveAddress,
                         signerToAdd:    signerToAddAddress,
                         deadline:       deadlineTimestamp,

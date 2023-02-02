@@ -3,6 +3,7 @@ import { Account, createEthereumScenario, EthereumScenario, EthereumSetupContext
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
 import { CallableMock } from '../../src/testing/CallableMock';
 import { OrderbookMock } from '../../src/testing/OrderbookMock';
+import { compareHexString } from '../utils/compareHexString';
 
 export enum Orderbook {
     FIRST   = 'firstOrderbook',
@@ -61,7 +62,10 @@ export function createTreasuryScenario<Context>({
                 ctx.addContext('signers', signers);
                 ctx.addContext('signaturesRequired', signaturesRequired);
                 ctx.addContext('executionDelay', executionDelay);
-                const treasury = await OrderbookDEXTeamTreasury.deploy(signers.map(signer => ctx[signer]), signaturesRequired, executionDelay);
+
+                const signersAddresses = signers.map(signer => ctx[signer]).sort(compareHexString);
+
+                const treasury = await OrderbookDEXTeamTreasury.deploy(signersAddresses, signaturesRequired, executionDelay);
                 const firstOrderbook   = await OrderbookMock.deploy(false);
                 const secondOrderbook  = await OrderbookMock.deploy(false);
                 const thirdOrderbook   = await OrderbookMock.deploy(false);
@@ -72,7 +76,7 @@ export function createTreasuryScenario<Context>({
                 return setup({
                     ...ctx,
                     treasury,
-                    signers: signers.map(signer => ctx[signer]),
+                    signers: signersAddresses,
                     signaturesRequired,
                     executionDelay,
                     firstOrderbook,
@@ -92,7 +96,11 @@ export function describeTreasuryProps({
     signers,
     signaturesRequired,
     executionDelay,
-}: TreasuryProperties): string {
+}: {
+    signers?: string[];
+    signaturesRequired?: bigint;
+    executionDelay?: bigint;
+}): string {
     const description = [];
     if (signers) {
         description.push(`signers = ${signers.toString() || 'none'}`);

@@ -1,7 +1,10 @@
-import { Address, ContractError } from '@frugal-wizard/abi2ts-lib';
+import { Address, ContractError, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
 import { Account, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
+import { compareHexString } from '../utils/compareHexString';
 import { describeTreasuryProps } from './Treasury';
+
+type Signer = Account | '0x0000000000000000000000000000000000000000';
 
 export type DeployScenario = {
     readonly expectedError?: ContractError;
@@ -19,13 +22,15 @@ export function createDeployScenario({
     signers = [ Account.MAIN, Account.SECOND ],
     signaturesRequired = 1n,
     executionDelay = 0n,
+    reverseSigners = false,
     expectedError,
 }: {
     only?: boolean;
     description?: string;
-    signers?: Account[];
+    signers?: Signer[];
     signaturesRequired?: bigint;
     executionDelay?: bigint;
+    reverseSigners?: boolean;
     expectedError?: ContractError;
 }): DeployScenario {
     return {
@@ -33,19 +38,23 @@ export function createDeployScenario({
 
         ...createEthereumScenario({
             only,
-            description: description || `deploy${describeTreasuryProps({ signers: signers, signaturesRequired, executionDelay })}`,
+            description: description || `deploy${describeTreasuryProps({ signers, signaturesRequired, executionDelay })}`,
 
             async setup(ctx) {
                 ctx.addContext('signers', signers);
                 ctx.addContext('signaturesRequired', signaturesRequired);
                 ctx.addContext('executionDelay', executionDelay);
+
+                const signersAddresses = signers.map(signer => signer == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[signer]).sort(compareHexString);
+                if (reverseSigners) signersAddresses.reverse();
+
                 return {
                     ...ctx,
-                    signers: signers.map(signer => ctx[signer]),
+                    signers: signersAddresses,
                     signaturesRequired,
                     executionDelay,
-                    execute: () => OrderbookDEXTeamTreasury.deploy(signers.map(signer => ctx[signer]), signaturesRequired, executionDelay),
-                    executeStatic: () => OrderbookDEXTeamTreasury.callStatic.deploy(signers.map(signer => ctx[signer]), signaturesRequired, executionDelay),
+                    execute: () => OrderbookDEXTeamTreasury.deploy(signersAddresses, signaturesRequired, executionDelay),
+                    executeStatic: () => OrderbookDEXTeamTreasury.callStatic.deploy(signersAddresses, signaturesRequired, executionDelay),
                 };
             },
         })

@@ -83,7 +83,7 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
     error CannotSelfSign();
 
     /**
-     * Error thrown if signatures are not sorted by signer address.
+     * Error thrown when signatures are not sorted by signer address.
      */
     error SignaturesOutOfOrder();
 
@@ -126,6 +126,21 @@ interface IOrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury_ {
      * Error thrown when trying to change fee above max fee.
      */
     error InvalidFee();
+
+    /**
+     * Error thrown when trying to set zero address as signer.
+     */
+    error InvalidSigner();
+
+    /**
+     * Error thrown when signers are not sorted by address.
+     */
+    error SignersOutOfOrder();
+
+    /**
+     * Error thrown when there is a signer appears twice.
+     */
+    error DuplicateSigner();
 
     /**
      * Schedule a change of fee for an orderbook version.

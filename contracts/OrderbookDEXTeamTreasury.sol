@@ -76,9 +76,25 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
             revert NotEnoughSigners();
         }
 
+        address prevSigner = address(0);
+
         for (uint256 i; i < signers_.length; i++) {
+            if (signers_[i] == address(0)) {
+                revert InvalidSigner();
+            }
+
+            if (signers_[i] < prevSigner) {
+                revert SignersOutOfOrder();
+            }
+
+            if (signers_[i] == prevSigner) {
+                revert DuplicateSigner();
+            }
+
             _signers[signers_[i]] = signers_[i];
             emit SignerAdded(signers_[i]);
+
+            prevSigner = signers_[i];
         }
 
         _signaturesRequired = signaturesRequired_;
@@ -101,6 +117,10 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
         uint256          deadline,
         bytes[] calldata signatures
     ) external onlySigner validUntil(deadline) {
+        if (signerToAdd == address(0)) {
+            revert InvalidSigner();
+        }
+
         if (_signers[signerToRemove] != signerToRemove) {
             revert SignerToRemoveIsNotASigner();
         }

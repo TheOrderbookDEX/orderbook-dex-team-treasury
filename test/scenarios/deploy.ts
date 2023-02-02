@@ -1,5 +1,6 @@
+import { ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
 import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
-import { NotEnoughSigners } from '../../src/OrderbookDEXTeamTreasury';
+import { DuplicateSigner, InvalidSigner, NotEnoughSigners, SignersOutOfOrder } from '../../src/OrderbookDEXTeamTreasury';
 import { createDeployScenario } from '../scenario/deploy';
 
 export const deployTestScenarios = [
@@ -35,13 +36,38 @@ export const deployTestScenarios = [
     }),
 
     createDeployScenario({
+        description: 'deploy with no signers',
         signers: [],
         signaturesRequired: 0n,
         expectedError: new NotEnoughSigners(),
     }),
+
     createDeployScenario({
+        description: 'deploy with not enough signers',
         signers: [ Account.MAIN ],
         signaturesRequired: 1n,
         expectedError: new NotEnoughSigners(),
+    }),
+
+    createDeployScenario({
+        description: 'deploy with invalid signer',
+        signers: [ ZERO_ADDRESS ],
+        signaturesRequired: 0n,
+        expectedError: new InvalidSigner(),
+    }),
+
+    createDeployScenario({
+        description: 'deploy with signers out of order',
+        signers: [ Account.MAIN, Account.SECOND ],
+        signaturesRequired: 0n,
+        reverseSigners: true,
+        expectedError: new SignersOutOfOrder(),
+    }),
+
+    createDeployScenario({
+        description: 'deploy with duplicate signer',
+        signers: [ Account.MAIN, Account.MAIN ],
+        signaturesRequired: 0n,
+        expectedError: new DuplicateSigner(),
     }),
 ];
