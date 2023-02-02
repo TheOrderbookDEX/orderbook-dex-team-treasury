@@ -241,6 +241,9 @@ contract OrderbookDEXTeamTreasury is IOrderbookDEXTeamTreasury, EIP712 {
 
     function claimFees(IOrderbook[] calldata orderbooks) external onlySigner {
         for (uint256 i; i < orderbooks.length; i++) {
+            if (!address(orderbooks[i]).isContract()) {
+                continue;
+            }
             try orderbooks[i].claimFees() {
                 continue;
             } catch {

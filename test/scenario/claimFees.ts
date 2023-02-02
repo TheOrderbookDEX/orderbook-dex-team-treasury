@@ -1,10 +1,10 @@
-import { Address, ContractError, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Address, ContractError, Transaction, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
 import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { createTreasuryScenario, describeTreasuryProps, Orderbook, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 export type ClaimFeesScenario = {
-    readonly orderbooks: Orderbook[],
+    readonly orderbooks: (Orderbook | '0x0000000000000000000000000000000000000000')[],
     readonly caller: Account,
     readonly expectedError?: ContractError;
 } & TreasuryScenario<TestSetupContext & EthereumSetupContext & TreasuryContext & {
@@ -24,7 +24,7 @@ export function createClaimFeesScenario({
 }: {
     only?: boolean;
     description?: string;
-    orderbooks: Orderbook[];
+    orderbooks: (Orderbook | '0x0000000000000000000000000000000000000000')[];
     caller?: Account;
     expectedError?: ContractError;
 } & TreasuryProperties): ClaimFeesScenario {
@@ -41,7 +41,7 @@ export function createClaimFeesScenario({
             async setup(ctx) {
                 ctx.addContext('orderbooks', orderbooks);
                 ctx.addContext('caller', caller);
-                const orderbooksAddresses = orderbooks.map(orderbook => ctx[orderbook].address);
+                const orderbooksAddresses = orderbooks.map(orderbook => orderbook == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[orderbook].address);
                 const callerAddress = ctx[caller];
                 return {
                     ...ctx,
@@ -55,6 +55,6 @@ export function createClaimFeesScenario({
     };
 }
 
-function describeOrderbooks(orderbooks: Orderbook[]): string {
+function describeOrderbooks(orderbooks: string[]): string {
     return ` from ${orderbooks.join(', ') || 'none'}`;
 }
