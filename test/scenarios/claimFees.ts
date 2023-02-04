@@ -1,5 +1,4 @@
-import { ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account } from '@frugal-wizard/contract-test-helper';
+import { Account, Addresses } from '@frugal-wizard/contract-test-helper';
 import { Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createClaimFeesScenario } from '../scenario/claimFees';
 import { Orderbook } from '../scenario/Treasury';
@@ -22,7 +21,7 @@ export const claimFeesScenarios = [
     }),
 
     createClaimFeesScenario({
-        orderbooks: [ Orderbook.FIRST, ZERO_ADDRESS ],
+        orderbooks: [ Orderbook.FIRST, Addresses.ZERO ],
     }),
 
     createClaimFeesScenario({

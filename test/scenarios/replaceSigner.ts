@@ -1,5 +1,5 @@
-import { MAX_UINT256, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
+import { MAX_UINT256 } from '@frugal-wizard/abi2ts-lib';
+import { Account, Addresses, generatorChain } from '@frugal-wizard/contract-test-helper';
 import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, InvalidSigner, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createReplaceSignerScenario } from '../scenario/replaceSigner';
 
@@ -52,26 +52,26 @@ export const replaceSignerScenarios = [
             expectedError: new CannotSelfSign(),
         };
 
-        // TODO we need an extra account for these tests (fix on contract-test-helper)
+        yield {
+            ...props,
+            description: 'replace signer using duplicate signature',
+            signerToAdd: Account.FOURTH,
+            signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
+            signaturesRequired: 2n,
+            signatures: [ Account.SECOND, Account.SECOND ],
+            expectedError: new DuplicateSignature(),
+        };
 
-        // yield {
-        //     ...props,
-        //     description: 'replace signer using duplicate signature',
-        //     signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
-        //     signaturesRequired: 2n,
-        //     signatures: [ Account.SECOND, Account.SECOND ],
-        //     expectedError: new DuplicateSignature(),
-        // };
-
-        // yield {
-        //     ...props,
-        //     description: 'replace signer using signatures out of order',
-        //     signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
-        //     signaturesRequired: 2n,
-        //     signatures: [ Account.SECOND, Account.THIRD ],
-        //     reverseSignatures: true,
-        //     expectedError: new SignaturesOutOfOrder(),
-        // };
+        yield {
+            ...props,
+            description: 'replace signer using signatures out of order',
+            signerToAdd: Account.FOURTH,
+            signers: [ Account.MAIN, Account.SECOND, Account.THIRD ],
+            signaturesRequired: 2n,
+            signatures: [ Account.SECOND, Account.THIRD ],
+            reverseSignatures: true,
+            expectedError: new SignaturesOutOfOrder(),
+        };
 
         yield {
             ...props,
@@ -94,7 +94,7 @@ export const replaceSignerScenarios = [
     createReplaceSignerScenario({
         description: 'replace signer with invalid signer',
         signerToRemove: Account.SECOND,
-        signerToAdd: ZERO_ADDRESS,
+        signerToAdd: Addresses.ZERO,
         signatures: [ Account.SECOND ],
         expectedError: new InvalidSigner(),
     }),

@@ -1,10 +1,11 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
-import { DefaultOverrides, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
+import { DefaultOverrides } from '@frugal-wizard/abi2ts-lib';
 import { claimFeesScenarios } from './scenarios/claimFees';
 import { ClaimFeesCalled } from '../src/testing/OrderbookMock';
 import { Orderbook } from './scenario/Treasury';
+import { Addresses } from '@frugal-wizard/contract-test-helper';
 
 chai.use(chaiAsPromised);
 
@@ -39,7 +40,7 @@ describe('claimFees', () => {
                     expect(events.map(event => event.address))
                         .to.have.members(
                             scenario.orderbooks
-                                .filter(orderbook => orderbook != ZERO_ADDRESS)
+                                .filter(orderbook => orderbook != Addresses.ZERO)
                                 .filter(orderbook => orderbook != Orderbook.ERRORED)
                                 .map(orderbook => test[orderbook as Orderbook].address)
                         );

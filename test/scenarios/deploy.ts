@@ -1,5 +1,4 @@
-import { ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
+import { Account, Addresses, generatorChain } from '@frugal-wizard/contract-test-helper';
 import { DuplicateSigner, InvalidSigner, NotEnoughSigners, SignersOutOfOrder } from '../../src/OrderbookDEXTeamTreasury';
 import { createDeployScenario } from '../scenario/deploy';
 
@@ -51,7 +50,7 @@ export const deployTestScenarios = [
 
     createDeployScenario({
         description: 'deploy with invalid signer',
-        signers: [ ZERO_ADDRESS ],
+        signers: [ Addresses.ZERO ],
         signaturesRequired: 0n,
         expectedError: new InvalidSigner(),
     }),

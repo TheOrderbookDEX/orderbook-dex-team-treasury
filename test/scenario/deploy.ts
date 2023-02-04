@@ -1,10 +1,10 @@
-import { Address, ContractError, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError } from '@frugal-wizard/abi2ts-lib';
+import { Account, Addresses, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
 import { compareHexString } from '../utils/compareHexString';
 import { describeTreasuryProps } from './Treasury';
 
-type Signer = Account | '0x0000000000000000000000000000000000000000';
+type Signer = Account | Addresses.ZERO;
 
 export type DeployScenario = {
     readonly expectedError?: ContractError;
@@ -45,7 +45,7 @@ export function createDeployScenario({
                 ctx.addContext('signaturesRequired', signaturesRequired);
                 ctx.addContext('executionDelay', executionDelay);
 
-                const signersAddresses = signers.map(signer => signer == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[signer]).sort(compareHexString);
+                const signersAddresses = signers.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSigners) signersAddresses.reverse();
 
                 return {

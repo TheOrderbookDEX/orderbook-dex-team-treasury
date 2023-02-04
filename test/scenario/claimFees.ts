@@ -1,10 +1,10 @@
-import { Address, ContractError, Transaction, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Account, Addresses, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { createTreasuryScenario, describeTreasuryProps, Orderbook, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 export type ClaimFeesScenario = {
-    readonly orderbooks: (Orderbook | '0x0000000000000000000000000000000000000000')[],
+    readonly orderbooks: (Orderbook | Addresses.ZERO)[],
     readonly caller: Account,
     readonly expectedError?: ContractError;
 } & TreasuryScenario<TestSetupContext & EthereumSetupContext & TreasuryContext & {
@@ -24,7 +24,7 @@ export function createClaimFeesScenario({
 }: {
     only?: boolean;
     description?: string;
-    orderbooks: (Orderbook | '0x0000000000000000000000000000000000000000')[];
+    orderbooks: (Orderbook | Addresses.ZERO)[];
     caller?: Account;
     expectedError?: ContractError;
 } & TreasuryProperties): ClaimFeesScenario {
@@ -41,7 +41,7 @@ export function createClaimFeesScenario({
             async setup(ctx) {
                 ctx.addContext('orderbooks', orderbooks);
                 ctx.addContext('caller', caller);
-                const orderbooksAddresses = orderbooks.map(orderbook => orderbook == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[orderbook].address);
+                const orderbooksAddresses = orderbooks.map(orderbook => toAddress(ctx[orderbook]));
                 const callerAddress = ctx[caller];
                 return {
                     ...ctx,
@@ -53,6 +53,10 @@ export function createClaimFeesScenario({
             },
         }),
     };
+}
+
+function toAddress(addressable: string | { address: string }): string {
+    return typeof(addressable) == 'object' ? addressable.address : addressable;
 }
 
 function describeOrderbooks(orderbooks: string[]): string {

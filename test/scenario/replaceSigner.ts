@@ -1,5 +1,5 @@
-import { Address, ContractError, getBlockTimestamp, Transaction, ZERO_ADDRESS } from '@frugal-wizard/abi2ts-lib';
-import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Account, Addresses, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
@@ -8,7 +8,7 @@ import { compareHexString } from '../utils/compareHexString';
 import { collectSignatures } from '../utils/collectSignatures';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
-type Signer = Account | '0x0000000000000000000000000000000000000000';
+type Signer = Account | Addresses.ZERO;
 
 export type ReplaceSignerScenario = {
     readonly signerToRemove: Account,
@@ -72,7 +72,7 @@ export function createReplaceSignerScenario({
                 ctx.addContext('reverseSignatures', reverseSignatures);
                 ctx.addContext('nonce', nonce ?? 'current');
                 const signerToRemoveAddress = ctx[signerToRemove];
-                const signerToAddAddress = signerToAdd == ZERO_ADDRESS ? ZERO_ADDRESS : ctx[signerToAdd];
+                const signerToAddAddress = ctx[signerToAdd];
                 const actualNonce = nonce ?? await ctx.treasury.nonce();
                 const deadlineTimestamp = BigInt(await getBlockTimestamp()) + deadline;
                 const callerAddress = ctx[caller];
