@@ -5,7 +5,7 @@ import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
 import { compareHexString } from '../utils/compareHexString';
-import { signTypedData } from '../utils/signTypedData';
+import { collectSignatures } from '../utils/collectSignatures';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 type Signer = Account | '0x0000000000000000000000000000000000000000';
@@ -78,7 +78,7 @@ export function createReplaceSignerScenario({
                 const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSignatures) signersAddresses.reverse();
-                const actualSignatures = await signTypedData({
+                const actualSignatures = await collectSignatures({
                     signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
                     domainVersion: '1',
@@ -92,8 +92,7 @@ export function createReplaceSignerScenario({
                             { name: 'deadline',       type: 'uint256' },
                         ],
                     },
-                    primaryType: 'ReplaceSigner',
-                    message: {
+                    data: {
                         executor:       callerAddress,
                         nonce:          actualNonce,
                         signerToRemove: signerToRemoveAddress,

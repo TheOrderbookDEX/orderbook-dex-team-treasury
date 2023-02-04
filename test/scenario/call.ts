@@ -1,12 +1,11 @@
-import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Address, ContractError, encodeCall, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
 import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
 import { compareHexString } from '../utils/compareHexString';
-import { encodeCall } from '../utils/encodeCall';
-import { signTypedData } from '../utils/signTypedData';
+import { collectSignatures } from '../utils/collectSignatures';
 import { Callable, createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 export type CallScenario = {
@@ -74,7 +73,7 @@ export function createCallScenario({
                 ctx.addContext('target', target);
                 ctx.addContext('method', method);
                 ctx.addContext('argTypes', argTypes);
-                ctx.addContext('argValues', argValues.map(String)); // TODO this has to be fixed in contract-test-helper
+                ctx.addContext('argValues', argValues);
                 ctx.addContext('value', value);
                 ctx.addContext('deadline', deadline);
                 ctx.addContext('signatures', signatures);
@@ -87,7 +86,7 @@ export function createCallScenario({
                 const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSignatures) signersAddresses.reverse();
-                const actualSignatures = await signTypedData({
+                const actualSignatures = await collectSignatures({
                     signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
                     domainVersion: '1',
@@ -102,8 +101,7 @@ export function createCallScenario({
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
-                    primaryType: 'Call',
-                    message: {
+                    data: {
                         executor: callerAddress,
                         nonce:    actualNonce,
                         target:   targetAddress,

@@ -2,7 +2,7 @@ import { formatValue } from '@frugal-wizard/abi2ts-lib';
 import { Account, now } from '@frugal-wizard/contract-test-helper';
 import { describeVersion } from '../describe/version';
 import { compareHexString } from '../utils/compareHexString';
-import { signTypedData } from '../utils/signTypedData';
+import { collectSignatures } from '../utils/collectSignatures';
 import { TreasuryAction } from './Treasury';
 
 export function createScheduleChangeFeeAction({
@@ -22,7 +22,7 @@ export function createScheduleChangeFeeAction({
             const caller = ctx.signers[0];
             const nonce = await ctx.treasury.nonce();
             const signers = ctx.signers.slice(1).sort(compareHexString);
-            const actualSignatures = await signTypedData({
+            const actualSignatures = await collectSignatures({
                 signers,
                 domainName: 'OrderbookDEXTeamTreasury',
                 domainVersion: '1',
@@ -36,8 +36,7 @@ export function createScheduleChangeFeeAction({
                         { name: 'deadline', type: 'uint256' },
                     ],
                 },
-                primaryType: 'ScheduleChangeFee',
-                message: {
+                data: {
                     executor: caller,
                     nonce:    nonce,
                     version:  version,

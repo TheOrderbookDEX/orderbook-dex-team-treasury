@@ -1,12 +1,11 @@
-import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
+import { Address, ContractError, encodeCall, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
 import { Account, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
 import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
 import { compareHexString } from '../utils/compareHexString';
-import { encodeCall } from '../utils/encodeCall';
-import { signTypedData } from '../utils/signTypedData';
+import { collectSignatures } from '../utils/collectSignatures';
 import { Callable, createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 export type MulticallScenario = {
@@ -67,7 +66,7 @@ export function createMulticallScenario({
             async setup(ctx) {
                 await executeSetupActions(setupActions, { ...ctx });
 
-                ctx.addContext('calls', fixForAddContext(calls));
+                ctx.addContext('calls', calls);
                 ctx.addContext('deadline', deadline);
                 ctx.addContext('signatures', signatures);
                 ctx.addContext('caller', caller);
@@ -87,7 +86,7 @@ export function createMulticallScenario({
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSignatures) signersAddresses.reverse();
 
-                const actualSignatures = await signTypedData({
+                const actualSignatures = await collectSignatures({
                     signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
                     domainVersion: '1',
@@ -105,8 +104,7 @@ export function createMulticallScenario({
                             { name: 'value',    type: 'uint256' },
                         ],
                     },
-                    primaryType: 'Multicall',
-                    message: {
+                    data: {
                         executor: callerAddress,
                         nonce:    actualNonce,
                         calls:    actualCalls,
@@ -128,11 +126,6 @@ export function createMulticallScenario({
             },
         }),
     };
-}
-
-// TODO this should be fixed in contract-test-helper
-function fixForAddContext(value: unknown) {
-    return JSON.parse(JSON.stringify(value, (_, value) => typeof(value) == 'bigint' ? String(value) : value));
 }
 
 function describeCalls(calls: {

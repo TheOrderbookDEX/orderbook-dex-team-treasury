@@ -5,7 +5,7 @@ import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';
 import { describeVersion } from '../describe/version';
 import { compareHexString } from '../utils/compareHexString';
-import { signTypedData } from '../utils/signTypedData';
+import { collectSignatures } from '../utils/collectSignatures';
 import { createTreasuryScenario, describeTreasuryProps, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 
 export type ScheduleChangeFeeScenario = {
@@ -68,7 +68,7 @@ export function createScheduleChangeFeeScenario({
                 const callerAddress = ctx[caller];
                 const signersAddresses = signatures.map(signer => ctx[signer]).sort(compareHexString);
                 if (reverseSignatures) signersAddresses.reverse();
-                const actualSignatures = await signTypedData({
+                const actualSignatures = await collectSignatures({
                     signers: signersAddresses,
                     domainName: 'OrderbookDEXTeamTreasury',
                     domainVersion: '1',
@@ -82,8 +82,7 @@ export function createScheduleChangeFeeScenario({
                             { name: 'deadline', type: 'uint256' },
                         ],
                     },
-                    primaryType: 'ScheduleChangeFee',
-                    message: {
+                    data: {
                         executor: callerAddress,
                         nonce:    actualNonce,
                         version:  version,
