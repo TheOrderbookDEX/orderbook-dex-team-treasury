@@ -1,4 +1,4 @@
-import { Account, Addresses, generatorChain } from '@frugal-wizard/contract-test-helper';
+import { Account, Addresses, generatorChain } from '@frugalwizard/contract-test-helper';
 import { DuplicateSigner, InvalidSigner, NotEnoughSigners, SignersOutOfOrder } from '../../src/OrderbookDEXTeamTreasury';
 import { createDeployScenario } from '../scenario/deploy';
 

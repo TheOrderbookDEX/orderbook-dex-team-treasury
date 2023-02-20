@@ -1,5 +1,5 @@
-import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, formatValue, getBlockTimestamp, Transaction } from '@frugalwizard/abi2ts-lib';
+import { Account, EthereumSetupContext, TestSetupContext } from '@frugalwizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';
 import { describeSignatures } from '../describe/signatures';

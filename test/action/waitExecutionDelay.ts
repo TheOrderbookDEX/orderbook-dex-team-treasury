@@ -1,5 +1,5 @@
-import { getBlockTimestamp } from '@frugal-wizard/abi2ts-lib';
-import { setChainTime } from '@frugal-wizard/contract-test-helper';
+import { getBlockTimestamp } from '@frugalwizard/abi2ts-lib';
+import { setChainTime } from '@frugalwizard/contract-test-helper';
 import { TreasuryAction } from './Treasury';
 
 export function createWaitExecutionDelayAction(): TreasuryAction {

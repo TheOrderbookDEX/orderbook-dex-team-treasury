@@ -1,4 +1,4 @@
-import { Account, Addresses } from '@frugal-wizard/contract-test-helper';
+import { Account, Addresses } from '@frugalwizard/contract-test-helper';
 import { Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createClaimFeesScenario } from '../scenario/claimFees';
 import { Orderbook } from '../scenario/Treasury';

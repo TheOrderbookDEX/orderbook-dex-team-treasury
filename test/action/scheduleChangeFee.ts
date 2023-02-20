@@ -1,5 +1,5 @@
-import { formatValue } from '@frugal-wizard/abi2ts-lib';
-import { Account, now } from '@frugal-wizard/contract-test-helper';
+import { formatValue } from '@frugalwizard/abi2ts-lib';
+import { Account, now } from '@frugalwizard/contract-test-helper';
 import { describeVersion } from '../describe/version';
 import { compareHexString } from '../utils/compareHexString';
 import { collectSignatures } from '../utils/collectSignatures';

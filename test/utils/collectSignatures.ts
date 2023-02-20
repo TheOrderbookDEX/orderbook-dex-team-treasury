@@ -1,4 +1,4 @@
-import { Address, getProvider, signTypedData } from '@frugal-wizard/abi2ts-lib';
+import { Address, getProvider, signTypedData } from '@frugalwizard/abi2ts-lib';
 
 export async function collectSignatures({
     signers,

@@ -1,8 +1,8 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
-import { DefaultOverrides } from '@frugal-wizard/abi2ts-lib';
-import { is } from '@frugal-wizard/contract-test-helper';
+import { DefaultOverrides } from '@frugalwizard/abi2ts-lib';
+import { is } from '@frugalwizard/contract-test-helper';
 import { Called } from '../src/testing/CallableMock';
 import { multicallScenarios } from './scenarios/multicall';
 

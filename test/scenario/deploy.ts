@@ -1,5 +1,5 @@
-import { Address, ContractError } from '@frugal-wizard/abi2ts-lib';
-import { Account, Addresses, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError } from '@frugalwizard/abi2ts-lib';
+import { Account, Addresses, createEthereumScenario, EthereumScenario, EthereumSetupContext, TestSetupContext } from '@frugalwizard/contract-test-helper';
 import { OrderbookDEXTeamTreasury } from '../../src/OrderbookDEXTeamTreasury';
 import { compareHexString } from '../utils/compareHexString';
 import { describeTreasuryProps } from './Treasury';

@@ -1,11 +1,11 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
-import { DefaultOverrides } from '@frugal-wizard/abi2ts-lib';
+import { DefaultOverrides } from '@frugalwizard/abi2ts-lib';
 import { claimFeesScenarios } from './scenarios/claimFees';
 import { ClaimFeesCalled } from '../src/testing/OrderbookMock';
 import { Orderbook } from './scenario/Treasury';
-import { Addresses } from '@frugal-wizard/contract-test-helper';
+import { Addresses } from '@frugalwizard/contract-test-helper';
 
 chai.use(chaiAsPromised);
 

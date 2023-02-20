@@ -1,5 +1,5 @@
-import { Address, ContractError, getBlockTimestamp, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, Addresses, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, getBlockTimestamp, Transaction } from '@frugalwizard/abi2ts-lib';
+import { Account, Addresses, describeSetupActions, EthereumSetupContext, executeSetupActions, TestSetupContext } from '@frugalwizard/contract-test-helper';
 import { TreasuryAction } from '../action/Treasury';
 import { describeCaller } from '../describe/caller';
 import { describeDeadline } from '../describe/deadline';

@@ -1,4 +1,4 @@
-import { formatValue, sendETH } from '@frugal-wizard/abi2ts-lib';
+import { formatValue, sendETH } from '@frugalwizard/abi2ts-lib';
 import { TreasuryAction } from './Treasury';
 
 export function createSendEthToTreasuryAction({ value }: {

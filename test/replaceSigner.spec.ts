@@ -1,9 +1,9 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
-import { DefaultOverrides } from '@frugal-wizard/abi2ts-lib';
+import { DefaultOverrides } from '@frugalwizard/abi2ts-lib';
 import { replaceSignerScenarios } from './scenarios/replaceSigner';
-import { is } from '@frugal-wizard/contract-test-helper';
+import { is } from '@frugalwizard/contract-test-helper';
 import { SignerAdded, SignerRemoved } from '../src/OrderbookDEXTeamTreasury';
 
 chai.use(chaiAsPromised);

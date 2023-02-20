@@ -1,6 +1,6 @@
 {
   "name": "@theorderbookdex/orderbook-dex-team-treasury",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "This is the package for The Orderbook DEX Team Treasury",
   "license": "BUSL-1.1",
   "author": "The Orderbook DEX Team",
@@ -18,14 +18,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@frugal-wizard/abi2ts-lib": "^0.8.0",
+    "@frugalwizard/abi2ts-lib": "^0.8.0",
     "@openzeppelin/contracts": "4.8.1",
-    "@theorderbookdex/orderbook-dex": "1.0.0-rc.15"
+    "@theorderbookdex/orderbook-dex": "1.0.0-rc.16"
   },
   "devDependencies": {
-    "@frugal-wizard/abi2ts": "^0.8.0",
-    "@frugal-wizard/contract-test-helper": "^0.5.0",
-    "@frugal-wizard/solidity-compiler-wrapper": "^1.2.0",
+    "@frugalwizard/abi2ts": "^0.8.1",
+    "@frugalwizard/contract-test-helper": "^0.5.1",
+    "@frugalwizard/solidity-compiler-wrapper": "^1.2.0",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/chai-string": "^1.4.2",

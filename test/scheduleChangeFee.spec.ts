@@ -1,8 +1,8 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { expect } from 'chai';
-import { DefaultOverrides, getBlockTimestamp } from '@frugal-wizard/abi2ts-lib';
-import { is } from '@frugal-wizard/contract-test-helper';
+import { DefaultOverrides, getBlockTimestamp } from '@frugalwizard/abi2ts-lib';
+import { is } from '@frugalwizard/contract-test-helper';
 import { FeeChangeScheduled, IOrderbookDEXTeamTreasuryScheduledFee } from '../src/OrderbookDEXTeamTreasury';
 import { scheduleChangeFeeScenarios } from './scenarios/scheduleChangeFee';
 

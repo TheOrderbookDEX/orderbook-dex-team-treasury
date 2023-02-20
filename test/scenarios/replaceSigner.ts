@@ -1,5 +1,5 @@
-import { MAX_UINT256 } from '@frugal-wizard/abi2ts-lib';
-import { Account, Addresses, generatorChain } from '@frugal-wizard/contract-test-helper';
+import { MAX_UINT256 } from '@frugalwizard/abi2ts-lib';
+import { Account, Addresses, generatorChain } from '@frugalwizard/contract-test-helper';
 import { AfterDeadline, CannotSelfSign, DuplicateSignature, InvalidSignature, InvalidSigner, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createReplaceSignerScenario } from '../scenario/replaceSigner';
 

@@ -1,5 +1,5 @@
-import { Address, ContractError, Transaction } from '@frugal-wizard/abi2ts-lib';
-import { Account, Addresses, EthereumSetupContext, TestSetupContext } from '@frugal-wizard/contract-test-helper';
+import { Address, ContractError, Transaction } from '@frugalwizard/abi2ts-lib';
+import { Account, Addresses, EthereumSetupContext, TestSetupContext } from '@frugalwizard/contract-test-helper';
 import { describeCaller } from '../describe/caller';
 import { createTreasuryScenario, describeTreasuryProps, Orderbook, TreasuryContext, TreasuryProperties, TreasuryScenario } from './Treasury';
 

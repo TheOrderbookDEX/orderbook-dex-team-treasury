@@ -1,5 +1,5 @@
-import { MAX_UINT256, parseValue } from '@frugal-wizard/abi2ts-lib';
-import { Account, generatorChain } from '@frugal-wizard/contract-test-helper';
+import { MAX_UINT256, parseValue } from '@frugalwizard/abi2ts-lib';
+import { Account, generatorChain } from '@frugalwizard/contract-test-helper';
 import { AfterDeadline, CannotChangeFee, CannotSelfSign, DuplicateSignature, InvalidSignature, NotEnoughSignatures, SignaturesOutOfOrder, Unauthorized } from '../../src/OrderbookDEXTeamTreasury';
 import { createScheduleChangeFeeAction } from '../action/scheduleChangeFee';
 import { createWaitExecutionDelayAction } from '../action/waitExecutionDelay';
