@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.17;
+pragma solidity 0.8.20;
 
 contract CallableMock {
     event Called(address sender, bytes data, uint256 value);
